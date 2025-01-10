@@ -1,0 +1,83 @@
+#page-lib-editor-tiny-plugins-elements-preview {
+    #page {
+        padding-top: 0;
+        margin-top: 0;
+    }
+}
+
+/* Admin backend */
+#page-lib-editor-tiny-plugins-elements-management,
+#page-lib-editor-tiny-plugins-elements-printurls {
+    .tiny_elements_thumbnail {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .preview.management {
+        display: flex;
+        justify-content: space-evenly;
+        width: 100%;
+        height: 3rem;
+        padding-bottom: .25rem;
+        & > div {
+            width: 45%;
+            .elements-button-text {
+                height: 100%;
+            }
+            .elements-button-text::before {
+                display: flex;
+                width: unset;
+                height: 100%;
+            }
+        }
+        & > div.more {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 10%;
+            .elements-button-text::before {
+                all: unset;
+                content: '...';
+            }
+            .elements-button-text {
+                word-wrap: unset;
+            }
+        }
+    }
+    
+    .compcat:hover .card {
+        border: 1px solid #787878;
+    }
+    .compcat.active .card {
+        border: 1px solid #0b5190;
+    }
+    
+    .card-title {
+        white-space: nowrap;
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        padding-top: .75rem;
+    }
+    
+    .card-body > div:hover  {
+        cursor: pointer;
+        & + a.edit {
+            color: #094478;
+        }
+    }
+    
+    form[data-formtype="tiny_elements_comp_flavor"] input.form-control {
+        width: 100%;
+    }
+    
+    .addcontainer .card {
+        max-width: 9rem;
+    }
+
+    .compcat[data-compcat="found-items"] a {
+        display: none;
+    }
+}

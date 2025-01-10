@@ -1,0 +1,41 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tiny_elements/management_preview
+
+    TODO describe template management_preview
+
+    Example context (json):
+    {
+        "component": "komponente",
+        "flavors": ["flav", "flav2"],
+        "config": {
+            "wwwroot": "http://localhost/moodle"
+        }
+    }
+}}
+
+{{< core/modal }}
+    {{$title}}{{#str}} previewcss, tiny_elements {{/str}}{{/title}}
+    {{$body}}
+        {{#str}} previewcsstext, tiny_elements {{/str}}
+        {{#flavors}}
+            <iframe style="width: 100%;" src="{{{ config.wwwroot }}}/lib/editor/tiny/plugins/elements/preview.php?component={{component}}&flavor={{.}}">
+            </iframe>
+        {{/flavors}}
+    {{/body}}
+{{/ core/modal }}

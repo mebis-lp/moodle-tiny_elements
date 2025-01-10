@@ -1,0 +1,212 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tiny_elements/management
+
+    TODO describe template management
+
+    Example context (json):
+{
+    "compcats": [
+        {
+            "id": "1",
+            "name": "just-boxes",
+            "displayname": "just boxes",
+            "displayorder": "4"
+        }
+    ],
+    "flavor": [
+        {
+            "id": "1",
+            "name": "horst-cloud",
+            "displayname": "Horst und Wölkchen",
+            "content": "",
+            "example": "https:\/\/localhost\/pluginfile.php\/1\/tiny_elements\/images\/4\/flavor-horst-cloud\/c4l_Horst_title.svg"
+        }
+    ],
+    "component": [
+        {
+            "id": "1",
+            "name": "teachpals-tip",
+            "displayname": "tip",
+            "compcat": "4",
+            "code": ""
+        }
+    ],
+    "variant": [
+        {
+            "id": 1,
+            "name": "Variant1",
+            "displayname": "Variant 1 Display Name",
+            "timemodified": 1628572800,
+            "content": "This is the content for Variant 1.",
+            "css": "variant1-css-class",
+            "timecreated": 1628569200
+        }
+    ]
+}
+}}
+
+<div class="container-fluid">
+    <div class="row row-cols-1 mb-2">
+        <div class="col">
+            <a href="{{exportlink}}" class="btn btn-primary"> {{#str}} export, tiny_elements {{/str}}</a>
+            <a href="#" id="elements_import" class="ml-2 btn btn-primary"> {{#str}} import, tiny_elements {{/str}}</a>            
+        </div>
+    </div>
+
+    <h2>{{#str}} compcat, tiny_elements {{/str}}</h2>
+    <div class="row row-cols-8">
+        {{#compcats}}
+            <div 
+                class="col mb-4 item compcat {{^id}}addcontainer{{/id}}" data-compcat="{{name}}"
+                data-loneflavors="{{loneflavors}}" data-lonevariants="{{lonevariants}}" data-lonecomponents="{{lonecomponents}}"
+            >
+                <div class="card h-100">
+                    <div class="card-body">
+                        {{#id}}
+                            <h5 class="card-title">{{displayname}}</h5>
+                            <div class="mt-auto">
+                                <a class="edit" href="#" data-id={{id}} data-table="compcat">
+                                    {{#pix}} t/edit, core, {{#str}} edit {{/str}}{{/pix}}</a>
+                                <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="compcat">
+                                    {{#pix}} t/delete, core, {{#str}} delete {{/str}}{{/pix}}
+                                </a>
+                            </div>
+                        {{/id}}
+                        {{^id}}
+                                <a class="add" href="#" data-id="0" data-table="compcat">
+                                    <h5 class="card-title">{{#str}} additem, tiny_elements {{/str}}</h5>
+                                    {{#pix}} t/add, core, {{#str}} add {{/str}}{{/pix}}</a>
+                                </a>
+                        {{/id}}
+                    </div>
+                </div>
+            </div>
+        {{/compcats}}
+    </div>
+
+    <h2>{{#str}} flavors, tiny_elements {{/str}}</h2>
+    <div class="row row-cols-12">
+        {{#flavor}}
+            <div class="col mb-4 item flavor {{name}} {{#id}}hidden{{/id}}{{^id}}addcontainer{{/id}}">
+                <div class="card h-100">
+                <div class="card-body">
+                    {{#id}}
+                        <div class="clickingextended">
+                            <div class="management preview">
+                                <img src="{{example}}" alt="{{displayname}}">
+                            </div>
+                            <h5 class="card-title">{{displayname}}</h5>
+                        </div>
+                        <div class="mt-auto">
+                            <a class="edit" href="#" data-id="{{id}}" data-table="flavor">
+                                {{#pix}} t/edit, core, {{#str}} edit {{/str}}{{/pix}}</a>
+                            <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="flavor">
+                                {{#pix}} t/delete, core, {{#str}} delete {{/str}}{{/pix}}
+                            </a>
+                        </div>
+                    {{/id}}
+                    {{^id}}
+                        <a class="add" href="#" data-id="0" data-table="flavor">
+                            <h5 class="card-title">{{#str}} additem, tiny_elements {{/str}}</h5>
+                            {{#pix}} t/add, core, {{#str}} add {{/str}}{{/pix}}</a>
+                        </a>
+                    {{/id}}
+                </div>
+                </div>
+            </div>
+        {{/flavor}}
+    </div>
+
+    <div class="row">
+        <div class="col mb-4"> 
+            <button id="elements_compflavor_button" class="btn btn-secondary">{{#str}} compflavor_icons, tiny_elements {{/str}}</button>
+        </div>
+    </div>
+    
+    <h2>{{#str}} components, tiny_elements {{/str}} </h2>
+
+    <div class="row row-cols-12">
+        {{#component}}
+            <div class="col mb-4 item component {{compcatname}} {{#id}}hidden{{/id}}{{^id}}addcontainer{{/id}}" data-flavors="{{#flavorsarr}}{{.}} {{/flavorsarr}}">
+                <div class="card h-100">
+                <div class="card-body">
+                    {{#id}}
+                        <div class="clickingextended">
+                            <div class="management preview">
+                                {{#flavorexamplesarr}}
+                                    <img src="{{.}}" alt="{{displayname}}">
+                                {{/flavorexamplesarr}}
+                            </div>
+                            <h5 class="card-title">{{displayname}}</h5>
+                        </div>
+                        <div class="d-flex mt-auto">
+                            <a class="edit" href="#" data-id={{id}} data-table="component">
+                                {{#pix}} t/edit, core, {{#str}} edit {{/str}}{{/pix}}
+                            </a>
+                            <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="component">
+                                {{#pix}} t/delete, core, {{#str}} delete {{/str}}{{/pix}}
+                            </a>
+                            <a class="preview" id="comp_{{name}}" href="#" data-component="{{name}}" data-flavors="{{#flavorsarr}}{{.}} {{/flavorsarr}}">
+                                {{#pix}} t/preview, core, {{#str}} previewcss, tiny_elements {{/str}}{{/pix}}
+                            </a>
+                        </div>
+                    {{/id}}
+                    {{^id}}
+                        <a class="add" href="#" data-id=0 data-table="component">
+                            <h5 class="card-title">{{#str}} additem, tiny_elements {{/str}}</h5>
+                            {{#pix}} t/add, core, {{#str}} add {{/str}}{{/pix}}</a>
+                        </a>
+                    {{/id}}
+                </div>
+                </div>
+            </div>
+        {{/component}}
+    </div>
+
+    <h2>{{#str}} variants, tiny_elements {{/str}}</h2>
+    <div class="row row-cols-12">
+        {{#variant}}
+            <div 
+                class="col mb-4 item variant {{name}} {{compcatmatches}} {{#id}}hidden{{/id}}{{^id}}addcontainer{{/id}}">
+                <div class="card h-100">
+                <div class="card-body">
+                    {{#id}}
+                        <div class="clickingextended">
+                            <h5 class="card-title">{{displayname}}</h5>
+                        </div>
+                        <div class="mt-auto">
+                            <a class="edit" href="#" data-id={{id}} data-table="variant">
+                                {{#pix}} t/edit, core, {{#str}} edit {{/str}}{{/pix}}</a>
+                            <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="variant">
+                                {{#pix}} t/delete, core, {{#str}} delete {{/str}}{{/pix}}
+                            </a>
+                        </div>
+                    {{/id}}
+                    {{^id}}
+                        <a class="add" href="#" data-id=0 data-table="variant">
+                            <h5 class="card-title">{{#str}} additem, tiny_elements {{/str}}</h5>
+                            {{#pix}} t/add, core, {{#str}} add {{/str}}{{/pix}}</a>
+                        </a>
+                    {{/id}}
+                </div>
+                </div>
+            </div>
+        {{/variant}}
+    </div>
+</div>

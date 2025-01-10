@@ -14,19 +14,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tiny C4L common.
+ * Tiny Elements common.
  *
- * @module      tiny_c4l/common
+ * @module      tiny_elements/common
  * @copyright   2022 Marc Català <reskit@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-const component = 'tiny_c4l';
+const component = 'tiny_elements';
 
 export default {
     component,
     pluginName: `${component}/plugin`,
     icon: `${component}`,
-    c4lButtonName: `${component}`,
-    c4lMenuItemName: `${component}`,
+    elementsButtonName: `${component}`,
+    elementsMenuItemName: `${component}`,
 };

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capabilities for the tiny_c4l plugin.
+ * Capabilities for the tiny_elements plugin.
  *
- * @package    tiny_c4l
+ * @package    tiny_elements
  * @copyright  2022 Marc Català <reskit@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,13 +25,20 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-    'tiny/c4l:viewplugin' => [
+    'tiny/elements:viewplugin' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    'tiny/elements:manage' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
             'manager' => CAP_ALLOW,
         ],
     ],

@@ -14,14 +14,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tiny C4L configuration.
+ * Tiny Elements configuration.
  *
- * @module      tiny_c4l/configuration
+ * @module      tiny_elements/configuration
  * @copyright   2022 Marc Català <reskit@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {component as c4lButtonName} from './common';
+import {component as elementsButtonName} from './common';
 import {addMenubarItem} from 'editor_tiny/utils';
 
 const configureMenu = (menu) => {
@@ -29,7 +29,7 @@ const configureMenu = (menu) => {
     const inserted = items.some((item, index) => {
         // Append after the link button.
         if (item.match(/(link)\b/)) {
-            items.splice(index + 1, 0, c4lButtonName);
+            items.splice(index + 1, 0, elementsButtonName);
             return true;
         }
 
@@ -39,7 +39,7 @@ const configureMenu = (menu) => {
     if (inserted) {
         menu.insert.items = items.join(' ');
     } else {
-        addMenubarItem(menu, 'insert', c4lButtonName);
+        addMenubarItem(menu, 'insert', elementsButtonName);
     }
 
     return menu;
@@ -51,15 +51,16 @@ const configureToolbar = (toolbar) => {
 
     return toolbar.map((section) => {
         if (section.name === 'content') {
-            // Insert the c4l button at the start of it.
-            section.items.unshift(c4lButtonName);
+            // Insert the elements button at the start of it.
+            section.items.unshift(elementsButtonName);
         }
 
         return section;
     });
 };
 
-export const configure = (instanceConfig) => {
+export const configure = (instanceConfig, options) => {
+    instanceConfig.content_css.push(options.plugins['tiny_elements/plugin'].config.cssurl);
     return {
         menu: configureMenu(instanceConfig.menu),
         toolbar: configureToolbar(instanceConfig.toolbar),
