@@ -144,6 +144,14 @@ const displayDialogue = async(editor) => {
         });
     });
 
+    // Event listener for category dropdown, triggering to switch to last used flavor.
+    const selectCategoriesRemember = modal.getRoot()[0].querySelectorAll('.nav-link.dropdown-toggle');
+    selectCategoriesRemember.forEach(node => {
+        node.addEventListener('click', (event) => {
+            handleCategoryRemember(event, modal);
+        });
+    });
+
     // Event buttons listeners.
     const buttons = modal.getRoot()[0].querySelectorAll('.elementst-dialog-button');
     buttons.forEach(node => {
@@ -217,6 +225,12 @@ const handleCategoryClick = (event, modal) => {
     showCategoryButtons(modal, currentCategoryId);
 };
 
+/**
+ * Handle a click on a flavor in the category dropdown.
+ *
+ * @param {MouseEvent} event The change event
+ * @param {obj} modal
+ */
 const handleCategoryFlavorClick = (event, modal) => {
     const link = event.target;
     currentFlavor = link.dataset.flavor;
@@ -256,6 +270,24 @@ const handleCategoryFlavorClick = (event, modal) => {
         }
     });
 
+};
+
+/**
+ * When opening the category dropdown, try to load remembered flavor.
+ *
+ * @param {MouseEvent} event The change event
+ * @param {obj} modal
+ */
+const handleCategoryRemember = (event, modal) => {
+    const link = event.target;
+    currentCategoryId = link.dataset.categoryid;
+    currentFlavorId = lastFlavor[currentCategoryId];
+
+    if (currentFlavorId != undefined) {
+        // Call handleCategoryFlavorClick with tampered data.
+        let e = {target: modal.getRoot()[0].querySelector('.elements-category-flavor[data-id="' + currentFlavorId + '"]')};
+        handleCategoryFlavorClick(e, modal);
+    }
 };
 
 /**
