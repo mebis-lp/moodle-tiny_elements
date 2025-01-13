@@ -70,8 +70,11 @@ class delete_item extends external_api {
             case 'flavor':
                 $manager->delete_flavor($id);
                 break;
-            default:
-                $DB->delete_records_select('tiny_elements_' . $table, 'id = ?', [$id]);
+            case 'variant':
+                $manager->delete_variant($id);
+                break;
+            case 'component':
+                $manager->delete_component($id);
                 break;
         }
 

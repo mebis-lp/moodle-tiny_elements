@@ -73,13 +73,13 @@ class management_import_form extends base_form {
         if ($file === null) {
             throw new \moodle_exception('errorbackupfile', 'tiny_elements');
         }
-        $manager = new \tiny_elements\manager();
+        $importer = new \tiny_elements\importer();
 
         if ($file->get_mimetype() == 'application/zip') {
-            $manager->import($file);
+            $importer->import($file);
         } else {
             $xmlcontent = $file->get_content();
-            $manager->importxml($xmlcontent);
+            $importer->importxml($xmlcontent);
         }
 
         \tiny_elements\local\utils::purge_css_cache();

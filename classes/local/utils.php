@@ -387,4 +387,60 @@ class utils {
             CSS;
         }
     }
+
+    /**
+     * Update the pluginfile tags in the given subject.
+     *
+     * @param array $categorymap
+     * @param string $subject
+     * @return string
+     */
+    public static function update_pluginfile_tags_bulk(array $categorymap, string $subject): string {
+        $subject = self::update_c4l_pluginfile_tags($subject);
+        foreach ($categorymap as $oldid => $newid) {
+            $subject = self::update_pluginfile_tags($oldid, $newid, $subject, 'bulk');
+        }
+        $subject = self::remove_mark($subject, 'bulk');
+        return $subject;
+    }
+
+    /**
+     * Rename the pluginfile tags from tiny_c4l to tiny_elements.
+     *
+     * @param string $subject
+     * @return string
+     */
+    public static function update_c4l_pluginfile_tags(string $subject): string {
+        $oldstring = '@@PLUGINFILE@@/1/tiny_c4l/';
+        $newstring = '@@PLUGINFILE@@/1/tiny_elements/';
+        return str_replace($oldstring, $newstring, $subject);
+    }
+
+    /**
+     * Update the pluginfile tags in the given subject.
+     *
+     * @param int $oldid
+     * @param int $newid
+     * @param string $subject
+     * @param string $mark (optional) A string to mark the path - to be removed later.
+     * @return string
+     */
+    public static function update_pluginfile_tags(int $oldid, int $newid, string $subject, string $mark = ''): string {
+        $oldstring = '@@PLUGINFILE@@/1/tiny_elements/images/' . $oldid . '/';
+        $newstring = '@@PLUGINFILE@@/1/tiny_elements/' . $mark . 'images/' . $newid . '/';
+        return str_replace($oldstring, $newstring, $subject);
+    }
+
+    /**
+     * Remove the mark from the given subject.
+     *
+     * @param string $subject
+     * @param string $mark
+     * @return string
+     */
+    public static function remove_mark(string $subject, string $mark): string {
+        $newstring = '@@PLUGINFILE@@/1/tiny_elements/images/';
+        $oldstring = '@@PLUGINFILE@@/1/tiny_elements/' . $mark . 'images/';
+        return str_replace($oldstring, $newstring, $subject);
+    }
 }

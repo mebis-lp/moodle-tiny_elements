@@ -24,7 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use tiny_elements\manager;
+use tiny_elements\importer;
 
 /**
  * Executed on installation of Components for Learning (Elements)
@@ -33,7 +33,7 @@ use tiny_elements\manager;
  */
 function xmldb_tiny_elements_install() {
     $basezip = __DIR__ . '/base.zip';
-    $manager = new manager();
-    $manager->import($basezip);
+    $importer = new importer();
+    $importer->import($basezip);
     return true;
 }

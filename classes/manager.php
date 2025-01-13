@@ -41,369 +41,6 @@ class manager {
     }
 
     /**
-     * Import files.
-     *
-     * @param array $files
-     * @param int $categoryid
-     * @param string $categoryname
-     * @throws moodle_exception
-     */
-    public function importfiles($files, $categoryid, $categoryname = '') {
-        $fs = get_file_storage();
-        foreach ($files as $file) {
-            if ($file->is_directory()) {
-                continue;
-            }
-            $newfilepath = ($categoryname ? str_replace('/' . $categoryname, '', $file->get_filepath()) : $file->get_filepath());
-            if (
-                $oldfile = $fs->get_file(
-                    $this->contextid,
-                    'tiny_elements',
-                    'images',
-                    $categoryid,
-                    $newfilepath,
-                    $file->get_filename()
-                )
-            ) {
-                if ($oldfile->get_contenthash() != $file->get_contenthash()) {
-                    $oldfile->replace_file_with($file);
-                }
-            } else {
-                $newfile = $fs->create_file_from_storedfile([
-                    'contextid' => $this->contextid,
-                    'component' => 'tiny_elements',
-                    'filearea' => 'images',
-                    'itemid' => $categoryid,
-                    'filepath' => $newfilepath,
-                    'filename' => $file->get_filename(),
-                ], $file);
-                if (!$newfile) {
-                    throw new moodle_exception(
-                        get_string('error_fileimport', 'tiny_elements', $newfilepath . $file->get_filename())
-                    );
-                }
-            }
-        }
-    }
-
-    /**
-     * Import xml
-     *
-     * @param string $xmlcontent
-     * @return boolean
-     */
-    public function importxml(string $xmlcontent): bool {
-        try {
-            $xml = simplexml_load_string($xmlcontent);
-        } catch (\Exception $exception) {
-            $xml = false;
-        }
-        if (!$xml) {
-            return false;
-        }
-
-        // Create mapping array for tiny_elements_compcat table.
-        $categorymap = [];
-
-        // Create mapping array for tiny_elements_component table.
-        $componentmap = [];
-
-        foreach (constants::TABLES as $table) {
-            $aliasname = constants::TABLE_ALIASES[$table];
-            if (!isset($xml->$table) && !isset($xml->$aliasname) && !in_array($table, constants::OPTIONAL_TABLES)) {
-                throw new moodle_exception(get_string('error_import_missing_table', 'tiny_elements', $table));
-            }
-        }
-
-        $data = [];
-
-        $aliases = array_flip(constants::TABLE_ALIASES);
-
-        // Make data usable for further processing.
-        foreach ($xml as $table => $rows) {
-            foreach ($rows as $row) {
-                $obj = new \stdClass();
-                foreach ($row as $column => $value) {
-                    $obj->$column = (string) $value;
-                }
-                if (in_array($table, constants::TABLES)) {
-                    $data[$table][] = $obj;
-                } else {
-                    $data[$aliases[$table]][] = $obj;
-                }
-            }
-        }
-
-        // First process all component categories. We need the category ids for the components.
-        foreach ($data['tiny_elements_compcat'] as $compcat) {
-            // Save new id for mapping.
-            $categorymap[$compcat->id] = self::import_category($compcat);
-        }
-
-        foreach ($data['tiny_elements_component'] as $component) {
-            $componentmap[$component->id] = self::import_component($component, $categorymap);
-        }
-
-        foreach ($data['tiny_elements_flavor'] as $flavor) {
-            self::import_flavor($flavor, $categorymap);
-        }
-
-        foreach ($data['tiny_elements_variant'] as $variant) {
-            self::import_variant($variant, $categorymap);
-        }
-
-        foreach ($data['tiny_elements_comp_flavor'] as $componentflavor) {
-            self::import_component_flavor($componentflavor, $categorymap);
-        }
-
-        foreach ($data['tiny_elements_comp_variant'] as $componentvariant) {
-            self::import_component_variant($componentvariant, $componentmap);
-        }
-
-        return true;
-    }
-
-    /**
-     * Import a component category.
-     *
-     * @param array|object $record
-     * @return int id of the imported category
-     */
-    public static function import_category(array|object $record): int {
-        global $DB;
-        $record = (array) $record;
-        $oldid = $record['id'];
-        $current = $DB->get_record('tiny_elements_compcat', ['name' => $record['name']]);
-        if ($current) {
-            $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_compcat', $record);
-        } else {
-            $record['id'] = $DB->insert_record('tiny_elements_compcat', $record);
-        }
-        // Update pluginfile tags in css if the id has changed.
-        if ($oldid != $record['id']) {
-            $record['css'] = self::update_pluginfile_tags($oldid, $record['id'], $record['css']);
-            $DB->update_record('tiny_elements_compcat', $record);
-        }
-        return $record['id'];
-    }
-
-    /**
-     * Import a component.
-     *
-     * @param array|object $record
-     * @param array $categorymap
-     * @return int id of the imported component
-     */
-    public static function import_component(array|object $record, array $categorymap): int {
-        global $DB;
-        $record = (array) $record;
-        if (isset($categorymap[$record['compcat']])) {
-            $record['compcat'] = $categorymap[$record['compcat']];
-        }
-
-        $record['css'] = self::update_pluginfile_tags_bulk($categorymap, $record['css'] ?? '');
-        $record['code'] = self::update_pluginfile_tags_bulk($categorymap, $record['code'] ?? '');
-        $record['js'] = self::update_pluginfile_tags_bulk($categorymap, $record['js'] ?? '');
-        $record['iconurl'] = self::update_pluginfile_tags_bulk($categorymap, $record['iconurl'] ?? '');
-
-        $current = $DB->get_record('tiny_elements_component', ['name' => $record['name']]);
-        if ($current) {
-            $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_component', $record);
-        } else {
-            try {
-                $record['id'] = $DB->insert_record('tiny_elements_component', $record);
-            } catch (\Exception $e) {
-                throw new moodle_exception(get_string('error_import_component', 'tiny_elements', $record['name']));
-            }
-        }
-
-        if (!empty($record['flavors'])) {
-            foreach (explode(',', $record['flavors']) as $flavor) {
-                if ($flavor == '') {
-                    continue;
-                }
-                $flavorrecord = [
-                    'componentname' => $record['name'],
-                    'flavorname' => $flavor,
-                ];
-                $DB->insert_record('tiny_elements_comp_flavor', $flavorrecord);
-            }
-        }
-
-        if (!empty($record['variants'])) {
-            foreach (explode(',', $record['variants']) as $variant) {
-                if ($variant == '') {
-                    continue;
-                }
-                $variantrecord = [
-                    'component' => $record['id'],
-                    'variant' => $variant,
-                ];
-                $DB->insert_record('tiny_elements_comp_variant', $variantrecord);
-            }
-        }
-
-        return $record['id'];
-    }
-
-    /**
-     * Import a flavor.
-     *
-     * @param array|object $record
-     * @param array $categorymap
-     * @return int id of the imported flavor
-     */
-    public static function import_flavor(array|object $record, array $categorymap): int {
-        global $DB;
-        $record = (array) $record;
-        $current = $DB->get_record('tiny_elements_flavor', ['name' => $record['name']]);
-
-        $record['css'] = self::update_pluginfile_tags_bulk($categorymap, $record['css'], 'import');
-        $record['content'] = self::update_pluginfile_tags_bulk($categorymap, $record['content'], 'import');
-
-        if ($current) {
-            $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_flavor', $record);
-        } else {
-            $record['id'] = $DB->insert_record('tiny_elements_flavor', $record);
-        }
-        return $record['id'];
-    }
-
-    /**
-     * Import a variant.
-     *
-     * @param array|object $record
-     * @param array $categorymap
-     * @return int id of the imported variant
-     */
-    public static function import_variant(array|object $record, array $categorymap): int {
-        global $DB;
-        $record = (array) $record;
-        $current = $DB->get_record('tiny_elements_variant', ['name' => $record['name']]);
-
-        $record['css'] = self::update_pluginfile_tags_bulk($categorymap, $record['css'] ?? '');
-        $record['content'] = self::update_pluginfile_tags_bulk($categorymap, $record['content'] ?? '');
-        $record['iconurl'] = self::update_pluginfile_tags_bulk($categorymap, $record['iconurl'] ?? '');
-
-        if ($current) {
-            $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_variant', $record);
-        } else {
-            $record['id'] = $DB->insert_record('tiny_elements_variant', $record);
-        }
-        return $record['id'];
-    }
-
-    /**
-     * Import a relation between component and flavor.
-     *
-     * @param array|object $record
-     * @param array $categorymap
-     * @return int id of the imported relation
-     */
-    public static function import_component_flavor(array|object $record, array $categorymap): int {
-        global $DB;
-        $record = (array) $record;
-        $current = $DB->get_record(
-            'tiny_elements_comp_flavor',
-            ['componentname' => $record['componentname'], 'flavorname' => $record['flavorname']]
-        );
-
-        $record['iconurl'] = self::update_pluginfile_tags_bulk($categorymap, $record['iconurl'] ?? '');
-
-        if ($current) {
-            $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_comp_flavor', $record);
-        } else {
-            $record['id'] = $DB->insert_record('tiny_elements_comp_flavor', $record);
-        }
-        return $record['id'];
-    }
-
-    /**
-     * Import a relation between component and variant.
-     *
-     * @param array|object $record
-     * @param array $componentmap
-     * @return int id of the imported relation
-     */
-    public static function import_component_variant(array|object $record, array $componentmap): int {
-        global $DB;
-        $record = (array) $record;
-        if (isset($componentmap[$record['component']])) {
-            $record['component'] = $componentmap[$record['component']];
-        }
-        $current = $DB->get_record(
-            'tiny_elements_comp_variant',
-            ['component' => $record['component'], 'variant' => $record['variant']]
-        );
-        if (!$current) {
-            $record['id'] = $DB->insert_record('tiny_elements_comp_variant', $record);
-            return $record['id'];
-        }
-        return $current->id;
-    }
-
-    /**
-     * Update the pluginfile tags in the given subject.
-     *
-     * @param array $categorymap
-     * @param string $subject
-     * @return string
-     */
-    public static function update_pluginfile_tags_bulk(array $categorymap, string $subject): string {
-        $subject = self::update_c4l_pluginfile_tags($subject);
-        foreach ($categorymap as $oldid => $newid) {
-            $subject = self::update_pluginfile_tags($oldid, $newid, $subject, 'bulk');
-        }
-        $subject = self::remove_mark($subject, 'bulk');
-        return $subject;
-    }
-
-    /**
-     * Rename the pluginfile tags from tiny_c4l to tiny_elements.
-     *
-     * @param string $subject
-     * @return string
-     */
-    public static function update_c4l_pluginfile_tags(string $subject): string {
-        $oldstring = '@@PLUGINFILE@@/1/tiny_c4l/';
-        $newstring = '@@PLUGINFILE@@/1/tiny_elements/';
-        return str_replace($oldstring, $newstring, $subject);
-    }
-
-    /**
-     * Update the pluginfile tags in the given subject.
-     *
-     * @param int $oldid
-     * @param int $newid
-     * @param string $subject
-     * @param string $mark (optional) A string to mark the path - to be removed later.
-     * @return string
-     */
-    public static function update_pluginfile_tags(int $oldid, int $newid, string $subject, string $mark = ''): string {
-        $oldstring = '@@PLUGINFILE@@/1/tiny_elements/images/' . $oldid . '/';
-        $newstring = '@@PLUGINFILE@@/1/tiny_elements/' . $mark . 'images/' . $newid . '/';
-        return str_replace($oldstring, $newstring, $subject);
-    }
-
-    /**
-     * Remove the mark from the given subject.
-     *
-     * @param string $subject
-     * @param string $mark
-     * @return string
-     */
-    public static function remove_mark(string $subject, string $mark): string {
-        $newstring = '@@PLUGINFILE@@/1/tiny_elements/images/';
-        $oldstring = '@@PLUGINFILE@@/1/tiny_elements/' . $mark . 'images/';
-        return str_replace($oldstring, $newstring, $subject);
-    }
-
-    /**
      * Delete a category.
      *
      * @param int $id
@@ -413,7 +50,10 @@ class manager {
         $fs = get_file_storage();
         $fs->delete_area_files($this->contextid, 'tiny_elements', 'images', $id);
         $DB->delete_records('tiny_elements_compcat', ['id' => $id]);
-        $DB->delete_records('tiny_elements_component', ['compcat' => $id]);
+        foreach ($DB->get_records('tiny_elements_component', ['compcat' => $id]) as $component) {
+            $this->delete_component($component->id);
+        }
+        // Todo: Delete all flavors and variants that were only used by this category.
     }
 
     /**
@@ -433,49 +73,38 @@ class manager {
     }
 
     /**
-     * Import data from a zip file.
+     * Delete a variant.
      *
-     * This method processes the provided zip file, extracts its contents,
-     * and imports the relevant XML and related category files. It also handles
-     * the cleanup of temporary files and rebuilds the system caches (CSS and JS).
-     *
-     * @param stored_file|string $zip The zip file to import, either as a file object or path.
-     * @param int $draftitemid The draft item ID associated with the import process (default is 0).
+     * @param int $id
      * @return void
      */
-    public function import(stored_file|string $zip, $draftitemid = 0): void {
+    public function delete_variant(int $id): void {
         global $DB;
+        $sql = 'DELETE FROM {tiny_elements_comp_variant} cv
+                WHERE variant IN (
+                    SELECT name FROM {tiny_elements_variant}
+                    WHERE id = ?
+                )';
+        $DB->execute($sql, [$id]);
+        $DB->delete_records('tiny_elements_variant', ['id' => $id]);
+    }
 
-        if ($zip instanceof stored_file || file_exists($zip)) {
-            $fs = get_file_storage();
-            $fp = get_file_packer('application/zip');
-            $fp->extract_to_storage($zip, $this->contextid, 'tiny_elements', 'import', $draftitemid, '/');
-            $manager = new manager();
-            $xmlfile = $fs->get_file($this->contextid, 'tiny_elements', 'import', $draftitemid, '/', 'tiny_elements_export.xml');
-            if (!$xmlfile) {
-                $xmlfile = $fs->get_file($this->contextid, 'tiny_elements', 'import', $draftitemid, '/', 'tiny_c4l_export.xml');
-            }
-            $xmlcontent = $xmlfile->get_content();
-            $manager->importxml($xmlcontent);
-            $categories = $DB->get_records('tiny_elements_compcat');
-            foreach ($categories as $category) {
-                $categoryfiles = $fs->get_directory_files(
-                    $this->contextid,
-                    'tiny_elements',
-                    'import',
-                    $draftitemid,
-                    '/' . $category->name . '/',
-                    true,
-                    false
-                );
-                $manager->importfiles($categoryfiles, $category->id, $category->name);
-            }
-            $fs->delete_area_files($this->contextid, 'tiny_elements', 'import', $draftitemid);
-
-            local\utils::purge_css_cache();
-            local\utils::rebuild_css_cache();
-            local\utils::purge_js_cache();
-            local\utils::rebuild_js_cache();
-        }
+    /**
+     * Delete a component.
+     *
+     * @param int $id
+     * @return void
+     */
+    public function delete_component(int $id): void {
+        global $DB;
+        $sql = 'DELETE FROM {tiny_elements_comp_flavor} cf
+                WHERE componentname IN (
+                    SELECT name FROM {tiny_elements_component}
+                    WHERE id = ?
+                )';
+        $DB->execute($sql, [$id]);
+        $sql = 'DELETE FROM {tiny_elements_comp_variant} WHERE component = ?';
+        $DB->execute($sql, [$id]);
+        $DB->delete_records('tiny_elements_component', ['id' => $id]);
     }
 }
