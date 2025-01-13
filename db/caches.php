@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $definitions = [
-        \tiny_elements\local\utils::TINY_ELEMENTS_CACHE_AREA => [
+        \tiny_elements\local\constants::CACHE_AREA => [
                 'mode' => cache_store::MODE_APPLICATION,
         ],
 ];

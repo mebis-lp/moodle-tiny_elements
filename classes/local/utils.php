@@ -25,21 +25,6 @@ namespace tiny_elements\local;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class utils {
-    /** @var string TINY_ELEMENTS_CACHE_AREA the cache area for the tiny_elements plugin */
-    public const TINY_ELEMENTS_CACHE_AREA = 'tiny_elements_css';
-
-    /** @var string TINY_ELEMENTS_JS_CACHE_KEY the cache key for the js code */
-    public const TINY_ELEMENTS_JS_CACHE_KEY = 'tiny_elements_js';
-
-    /** @var string TINY_ELEMENTS_CSS_CACHE_KEY the cache key for the css code */
-    public const TINY_ELEMENTS_CSS_CACHE_KEY = 'tiny_elements_css';
-
-    /** @var string TINY_ELEMENTS_CSS_CACHE_REV the cache key for the css revision */
-    public const TINY_ELEMENTS_CSS_CACHE_REV = 'tiny_elements_cssrev';
-
-    /** @var string TINY_ELEMENTS_JS_CACHE_REV the cache key for the js revision */
-    public const TINY_ELEMENTS_JS_CACHE_REV = 'tiny_elements_jsrev';
-
     /**
      * Get all components.
      * @param bool $isstudent
@@ -188,7 +173,7 @@ class utils {
      */
     public static function rebuild_css_cache(): int {
         global $DB;
-        $cache = \cache::make('tiny_elements', self::TINY_ELEMENTS_CACHE_AREA);
+        $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
         $iconcssentries = [];
         $componentcssentries = [];
         $variantscssentries = [];
@@ -257,8 +242,8 @@ class utils {
         $css = self::replace_pluginfile_urls($css, true);
         $clock = \core\di::get(\core\clock::class);
         $rev = $clock->time();
-        $cache->set(self::TINY_ELEMENTS_CSS_CACHE_KEY, $css);
-        $cache->set(self::TINY_ELEMENTS_CSS_CACHE_REV, $rev);
+        $cache->set(constants::CSS_CACHE_KEY, $css);
+        $cache->set(constants::CSS_CACHE_REV, $rev);
         return $rev;
     }
 
@@ -268,7 +253,7 @@ class utils {
      */
     public static function rebuild_js_cache(): int {
         global $DB;
-        $cache = \cache::make('tiny_elements', self::TINY_ELEMENTS_CACHE_AREA);
+        $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
         $jsentries = [];
         try {
             $jsentries = $DB->get_records_menu('tiny_elements_component', null, '', 'id, js');
@@ -283,10 +268,10 @@ class utils {
             '/* This file contains the javascript for the tiny_elements plugin.*/'
         );
         $js = self::replace_pluginfile_urls($js, true);
-        $cache->set(self::TINY_ELEMENTS_JS_CACHE_KEY, $js);
+        $cache->set(constants::JS_CACHE_KEY, $js);
         $clock = \core\di::get(\core\clock::class);
         $rev = $clock->time();
-        $cache->set(self::TINY_ELEMENTS_JS_CACHE_REV, $rev);
+        $cache->set(constants::JS_CACHE_REV, $rev);
         return $rev;
     }
 
@@ -294,18 +279,18 @@ class utils {
      * Purge the tiny_elements css cache.
      */
     public static function purge_css_cache(): void {
-        $cache = \cache::make('tiny_elements', self::TINY_ELEMENTS_CACHE_AREA);
-        $cache->delete(self::TINY_ELEMENTS_CSS_CACHE_KEY);
-        $cache->delete(self::TINY_ELEMENTS_CSS_CACHE_REV);
+        $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
+        $cache->delete(constants::CSS_CACHE_KEY);
+        $cache->delete(constants::CSS_CACHE_REV);
     }
 
     /**
      * Purge the tiny_elements js cache.
      */
     public static function purge_js_cache(): void {
-        $cache = \cache::make('tiny_elements', self::TINY_ELEMENTS_CACHE_AREA);
-        $cache->delete(self::TINY_ELEMENTS_JS_CACHE_KEY);
-        $cache->delete(self::TINY_ELEMENTS_JS_CACHE_REV);
+        $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
+        $cache->delete(constants::JS_CACHE_KEY);
+        $cache->delete(constants::JS_CACHE_REV);
     }
 
     /**
@@ -314,8 +299,8 @@ class utils {
      * @return string|false the css code as string, false if no cache entry found
      */
     public static function get_css_from_cache(): string|false {
-        $cache = \cache::make('tiny_elements', self::TINY_ELEMENTS_CACHE_AREA);
-        return $cache->get(self::TINY_ELEMENTS_CSS_CACHE_KEY);
+        $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
+        return $cache->get(constants::CSS_CACHE_KEY);
     }
 
     /**
@@ -324,8 +309,8 @@ class utils {
      * @return string|false the js code as string, false if no cache entry found
      */
     public static function get_js_from_cache(): string|false {
-        $cache = \cache::make('tiny_elements', self::TINY_ELEMENTS_CACHE_AREA);
-        return $cache->get(self::TINY_ELEMENTS_JS_CACHE_KEY);
+        $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
+        return $cache->get(constants::JS_CACHE_KEY);
     }
 
     /**

@@ -65,8 +65,8 @@ class hook_callbacks {
             $PAGE->add_body_class('tiny_elements_h4s');
         }
 
-        $cache = \cache::make('tiny_elements', utils::TINY_ELEMENTS_CACHE_AREA);
-        $rev = $cache->get(utils::TINY_ELEMENTS_CSS_CACHE_REV);
+        $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
+        $rev = $cache->get(constants::CSS_CACHE_REV);
         if (!$rev) {
             $rev = utils::rebuild_css_cache();
         }
@@ -80,7 +80,7 @@ class hook_callbacks {
         );
         $beforehttpheadershook->renderer->get_page()->requires->css($pluginfileurl);
 
-        $revjs = $cache->get(utils::TINY_ELEMENTS_JS_CACHE_REV);
+        $revjs = $cache->get(constants::JS_CACHE_REV);
         if (!$revjs) {
             $revjs = utils::rebuild_js_cache();
         }

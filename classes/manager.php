@@ -21,6 +21,7 @@ use moodle_exception;
 use stored_file;
 use xml_writer;
 use tiny_elements\local\utils;
+use tiny_elements\local\constants;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,29 +40,6 @@ require_once($CFG->dirroot . '/backup/util/xml/output/memory_xml_output.class.ph
 class manager {
     /** @var int $contextid */
     protected int $contextid = 1;
-    /** @var array All tables to export data from. */
-    protected static $tables = [
-        'compcat' => 'tiny_elements_compcat',
-        'component' => 'tiny_elements_component',
-        'flavor' => 'tiny_elements_flavor',
-        'variant' => 'tiny_elements_variant',
-        'compflavor' => 'tiny_elements_comp_flavor',
-        'compvariant' => 'tiny_elements_comp_variant',
-    ];
-    /** @var array Table name aliases for compatibility with tiny_c4l exports. */
-    protected static $tablealiases = [
-        'tiny_elements_compcat' => 'tiny_c4l_compcat',
-        'tiny_elements_component' => 'tiny_c4l_component',
-        'tiny_elements_flavor' => 'tiny_c4l_flavor',
-        'tiny_elements_variant' => 'tiny_c4l_variant',
-        'tiny_elements_comp_flavor' => 'tiny_c4l_comp_flavor',
-        'tiny_elements_comp_variant' => 'tiny_c4l_comp_variant',
-    ];
-    /** @var array All tables that are optional. */
-    protected static $optionaltables = ['tiny_elements_comp_flavor', 'tiny_elements_comp_variant'];
-
-    /** @var string Item. */
-    protected static $item = 'row';
 
     /**
      * Constructor.
@@ -125,7 +103,7 @@ class manager {
         $xmlwriter->begin_tag('elements');
 
         // Tiny_elements_compcat.
-        foreach (self::$tables as $shortname => $table) {
+        foreach (constants::TABLES as $table) {
             // Get columns.
             $columns = $DB->get_columns($table);
 
@@ -134,12 +112,12 @@ class manager {
 
             $xmlwriter->begin_tag($table);
             foreach ($data as $value) {
-                $xmlwriter->begin_tag(self::$item);
+                $xmlwriter->begin_tag(constants::ITEMNAME);
                 foreach ($columns as $column) {
                     $name = $column->name;
                     $xmlwriter->full_tag($name, $value->$name ?? '');
                 }
-                $xmlwriter->end_tag(self::$item);
+                $xmlwriter->end_tag(constants::ITEMNAME);
             }
             $xmlwriter->end_tag($table);
         }
@@ -223,16 +201,16 @@ class manager {
         // Create mapping array for tiny_elements_component table.
         $componentmap = [];
 
-        foreach (self::$tables as $table) {
-            $aliasname = self::$tablealiases[$table];
-            if (!isset($xml->$table) && !isset($xml->$aliasname) && !in_array($table, self::$optionaltables)) {
+        foreach (constants::TABLES as $table) {
+            $aliasname = constants::TABLE_ALIASES[$table];
+            if (!isset($xml->$table) && !isset($xml->$aliasname) && !in_array($table, constants::OPTIONAL_TABLES)) {
                 throw new moodle_exception(get_string('error_import_missing_table', 'tiny_elements', $table));
             }
         }
 
         $data = [];
 
-        $aliases = array_flip(self::$tablealiases);
+        $aliases = array_flip(constants::TABLE_ALIASES);
 
         // Make data usable for further processing.
         foreach ($xml as $table => $rows) {
@@ -241,7 +219,7 @@ class manager {
                 foreach ($row as $column => $value) {
                     $obj->$column = (string) $value;
                 }
-                if (in_array($table, self::$tables)) {
+                if (in_array($table, constants::TABLES)) {
                     $data[$table][] = $obj;
                 } else {
                     $data[$aliases[$table]][] = $obj;
@@ -587,10 +565,10 @@ class manager {
             }
             $fs->delete_area_files($this->contextid, 'tiny_elements', 'import', $draftitemid);
 
-            \tiny_elements\local\utils::purge_css_cache();
-            \tiny_elements\local\utils::rebuild_css_cache();
-            \tiny_elements\local\utils::purge_js_cache();
-            \tiny_elements\local\utils::rebuild_js_cache();
+            local\utils::purge_css_cache();
+            local\utils::rebuild_css_cache();
+            local\utils::purge_js_cache();
+            local\utils::rebuild_js_cache();
         }
     }
 }

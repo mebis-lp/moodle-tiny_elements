@@ -22,6 +22,7 @@ use editor_tiny\plugin_with_buttons;
 use editor_tiny\plugin_with_configuration;
 use editor_tiny\plugin_with_menuitems;
 use tiny_elements\local\utils;
+use tiny_elements\local\constants;
 
 /**
  * Tiny elements plugin for Moodle.
@@ -75,8 +76,8 @@ class plugininfo extends plugin implements plugin_with_buttons, plugin_with_conf
         $showpreview = get_config('tiny_elements', 'enablepreview');
         $isstudent = !has_capability('gradereport/grader:view', $context);
 
-        $cache = \cache::make('tiny_elements', utils::TINY_ELEMENTS_CACHE_AREA);
-        $rev = $cache->get(utils::TINY_ELEMENTS_CSS_CACHE_REV);
+        $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
+        $rev = $cache->get(constants::CSS_CACHE_REV);
         if (!$rev) {
             $rev = utils::rebuild_css_cache();
         }
