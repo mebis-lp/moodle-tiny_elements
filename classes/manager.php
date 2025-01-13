@@ -16,19 +16,9 @@
 
 namespace tiny_elements;
 
-use memory_xml_output;
 use moodle_exception;
 use stored_file;
-use xml_writer;
-use tiny_elements\local\utils;
 use tiny_elements\local\constants;
-
-defined('MOODLE_INTERNAL') || die();
-
-global $CFG;
-require_once($CFG->dirroot . '/backup/util/xml/xml_writer.class.php');
-require_once($CFG->dirroot . '/backup/util/xml/output/xml_output.class.php');
-require_once($CFG->dirroot . '/backup/util/xml/output/memory_xml_output.class.php');
 
 /**
  * Class manager
@@ -48,89 +38,6 @@ class manager {
      */
     public function __construct(int $contextid = SYSCONTEXTID) {
         $this->contextid = $contextid;
-    }
-
-    /**
-     * Export.
-     *
-     * @param int $compcatid
-     * @return stored_file
-     * @throws moodle_exception
-     */
-    public function export($compcatid = 0): stored_file {
-        global $DB;
-        $fs = get_file_storage();
-        $fp = get_file_packer('application/zip');
-        $compcats = $DB->get_records('tiny_elements_compcat');
-        // It is necessary to get the files for each compcat separately to avoid mixing up files from
-        // different categories.
-        foreach ($compcats as $compcat) {
-            $files = $fs->get_area_files($this->contextid, 'tiny_elements', 'images', $compcat->id);
-            foreach ($files as $file) {
-                $exportfiles[$compcat->name . '/' . $file->get_filepath() . $file->get_filename()] = $file;
-            }
-        }
-        $filerecord = [
-            'contextid' => $this->contextid,
-            'component' => 'tiny_elements',
-            'filearea' => 'export',
-            'itemid' => time(),
-            'filepath' => '/',
-            'filename' => 'tiny_elements_export.xml',
-        ];
-        $exportxmlfile = $fs->create_file_from_string($filerecord, $this->exportxml());
-        $exportfiles['tiny_elements_export.xml'] = $exportxmlfile;
-        $filename = 'tiny_elements_export_' . time() . '.zip';
-        $exportfile = $fp->archive_to_storage($exportfiles, $this->contextid, 'tiny_elements', 'export', 0, '/', $filename);
-        if (!$exportfile) {
-            throw new moodle_exception(get_string('error_export', 'tiny_elements'));
-        }
-        return $exportfile;
-    }
-
-    /**
-     * Export XML.
-     *
-     * @return string
-     */
-    public function exportxml(): string {
-        global $DB;
-
-        // Start.
-        $xmloutput = new memory_xml_output();
-        $xmlwriter = new xml_writer($xmloutput);
-        $xmlwriter->start();
-        $xmlwriter->begin_tag('elements');
-
-        // Tiny_elements_compcat.
-        foreach (constants::TABLES as $table) {
-            // Get columns.
-            $columns = $DB->get_columns($table);
-
-            // Get data.
-            $data = $DB->get_records($table);
-
-            $xmlwriter->begin_tag($table);
-            foreach ($data as $value) {
-                $xmlwriter->begin_tag(constants::ITEMNAME);
-                foreach ($columns as $column) {
-                    $name = $column->name;
-                    $xmlwriter->full_tag($name, $value->$name ?? '');
-                }
-                $xmlwriter->end_tag(constants::ITEMNAME);
-            }
-            $xmlwriter->end_tag($table);
-        }
-
-        // End.
-        $xmlwriter->end_tag('elements');
-        $xmlwriter->stop();
-        $xmlstr = $xmloutput->get_allcontents();
-
-        // This is just here for compatibility reasons.
-        $xmlstr = utils::replace_pluginfile_urls($xmlstr);
-
-        return $xmlstr;
     }
 
     /**

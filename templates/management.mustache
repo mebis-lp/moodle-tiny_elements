@@ -81,6 +81,8 @@
                         {{#id}}
                             <h5 class="card-title">{{displayname}}</h5>
                             <div class="mt-auto">
+                                <a class="export" href="{{exportlink}}/{{id}}">
+                                    {{#pix}} t/download, core, {{#str}} export, tiny_elements {{/str}}{{/pix}}</a>
                                 <a class="edit" href="#" data-id={{id}} data-table="compcat">
                                     {{#pix}} t/edit, core, {{#str}} edit {{/str}}{{/pix}}</a>
                                 <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="compcat">

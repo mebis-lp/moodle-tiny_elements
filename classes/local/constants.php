@@ -29,10 +29,10 @@ class constants {
     public const TABLES = [
         'compcat' => 'tiny_elements_compcat',
         'component' => 'tiny_elements_component',
-        'flavor' => 'tiny_elements_flavor',
-        'variant' => 'tiny_elements_variant',
         'compflavor' => 'tiny_elements_comp_flavor',
         'compvariant' => 'tiny_elements_comp_variant',
+        'flavor' => 'tiny_elements_flavor',
+        'variant' => 'tiny_elements_variant',
     ];
     /** @var array Table name aliases for compatibility with tiny_c4l exports. */
     public const TABLE_ALIASES = [

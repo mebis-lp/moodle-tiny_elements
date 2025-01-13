@@ -76,8 +76,14 @@ function tiny_elements_pluginfile(
     if ($filearea === 'export') {
         require_capability('tiny/elements:manage', $context);
 
-        $manager = new \tiny_elements\manager();
-        send_stored_file($manager->export());
+        $exporter = new \tiny_elements\exporter($context->id);
+
+        $compcatid = 0;
+
+        if (count($args) > 1) {
+            $compcatid = (int)$args[1];
+        }
+        send_stored_file($exporter->export($compcatid));
     } else if ($filearea === 'images') {
         $fs = get_file_storage();
         $fullpath = '/1/tiny_elements/images/' . implode('/', $args);
