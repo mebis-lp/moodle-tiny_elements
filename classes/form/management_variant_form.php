@@ -53,6 +53,9 @@ class management_variant_form extends base_form {
         $mform->addElement('url', 'iconurl', get_string('iconurl', 'tiny_elements'), ['size' => '255']);
         $mform->setType('iconurl', PARAM_URL);
 
+        $mform->addElement('static', 'printurls', '',
+            '<a href="#" onclick="window.open(\'printurls.php\', \'popup\', \'width=800,height=600\'); return false;">' . get_string('showprinturls', 'tiny_elements') . '</a>');
+
         $mform->addElement('advcheckbox', 'c4lcompatibility', get_string('c4lcompatibility', 'tiny_elements'));
         $mform->setType('c4lcompatibility', PARAM_INT);
         $mform->setDefault('c4lcompatibility', 0);

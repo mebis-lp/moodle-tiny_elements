@@ -80,6 +80,9 @@ class management_component_form extends base_form {
         $mform->addElement('url', 'iconurl', get_string('iconurl', 'tiny_elements'), ['size' => '255']);
         $mform->setType('iconurl', PARAM_URL);
 
+        $mform->addElement('static', 'printurls', '',
+            '<a href="#" onclick="window.open(\'printurls.php\', \'popup\', \'width=800,height=600\'); return false;">' . get_string('showprinturls', 'tiny_elements') . '</a>');
+
         $mform->addElement('checkbox', 'hideforstudents', get_string('hideforstudents', 'tiny_elements'));
         $mform->setType('hideforstudents', PARAM_INT);
     }

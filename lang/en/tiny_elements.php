@@ -83,6 +83,7 @@ $string['previewdefault'] = 'Place the pointer on any component to see its previ
 $string['privacy:preference:category'] = 'Preferred category';
 $string['privacy:preference:components_flavors'] = 'Preferred flavor for each component';
 $string['privacy:preference:components_variants'] = 'Preferred variants of each component';
+$string['showprinturls'] = 'Show urls to symbols';
 $string['text'] = 'Text';
 $string['validclassname'] = 'The name has to be a valid css class name. It may only contain letters, numbers and the characters "-" and "_". It must start with a letter or "_". Using only lowercase letters is recommended.';
 $string['variants'] = 'Variants';

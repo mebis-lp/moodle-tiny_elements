@@ -83,6 +83,7 @@ $string['previewdefault'] = 'Zeigen Sie mit dem Mauszeiger auf eine Komponente, 
 $string['privacy:preference:category'] = 'Bevorzugte Kategorie';
 $string['privacy:preference:components_flavors'] = 'Bevorzugte Geschmacksrichtung für jede Komponente';
 $string['privacy:preference:components_variants'] = 'Bevorzugte Varianten jeder Komponente';
+$string['showprinturls'] = 'Urls zu den Symbolen anzeigen';
 $string['text'] = 'Text';
 $string['validclassname'] = 'Der Name muss ein gültiger CSS-Klassenname sein. Er darf nur Buchstaben, Zahlen und die Zeichen "-" und "_" enthalten. Er muss mit einem Buchstaben oder "_" beginnen. Es wird empfohlen, nur Kleinbuchstaben zu verwenden.';
 $string['variants'] = 'Varianten';
