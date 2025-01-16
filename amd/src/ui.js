@@ -192,14 +192,7 @@ const displayDialogue = async(editor) => {
             });
             selectCategories.forEach((node) => {
                 if (node.dataset.categoryid == savedCategory) {
-                    // Simulate click on flavor.
-                    let target = modal.getRoot()[0].querySelector(
-                        '.elements-category-flavor[data-id="' + currentFlavorId + '"]',
-                    );
-                    if (target) {
-                        let e = {target: target};
-                        handleCategoryFlavorClick(e, modal);
-                    }
+                    node.click();
                 }
             });
         }
