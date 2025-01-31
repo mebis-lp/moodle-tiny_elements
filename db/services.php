@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External service definitions for local_ai_manager.
+ * External service definitions for tiny_elements
  *
  * @package    tiny_elements
  * @copyright  ISB Bayern, 2024
@@ -39,6 +39,14 @@ $functions = [
                 'description'   => 'Delete item.',
                 'type'          => 'write',
                 'ajax'          => true,
-                'capabilities'  => 'moodle/site:config',
+                'capabilities'  => 'tiny/elements:manage',
+        ],
+        'tiny_elements_duplicate_item' => [
+                'classname'     => 'tiny_elements\external\duplicate_item',
+                'methodname'    => 'execute',
+                'description'   => 'Duplicate item.',
+                'type'          => 'write',
+                'ajax'          => true,
+                'capabilities'  => 'tiny/elements:manage',
         ],
 ];

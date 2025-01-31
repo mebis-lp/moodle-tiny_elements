@@ -68,6 +68,15 @@ export const init = async(params) => {
         compflavorModal(e);
     });
 
+    // Add listener to duplicate items.
+    let duplicateitems = document.getElementsByClassName('duplicate');
+    duplicateitems.forEach(element => {
+        element.addEventListener('click', async() => {
+            duplicateItem(element.dataset.id, element.dataset.table);
+            reload();
+        });
+    });
+
     // Add image and text to item setting click area.
     let enlargeItems = document.querySelectorAll(
         '.flavor .card-body > .clickingextended, .component .card-body > .clickingextended, .variant .card-body > .clickingextended'
@@ -309,10 +318,36 @@ function showItems(e, compcat) {
 function reloadIfNew(form) {
     // Newly created element without id?
     if (!form.elements.id.value) {
-        // Reload page with active compcat.
-        const compcat = document.querySelector('.compcat.active');
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set('compcat', compcat.dataset.compcat);
-        window.location.href = currentUrl.toString();
+        reload();
     }
 }
+
+/**
+ * Reload page with active compcat.
+ */
+function reload() {
+    // Reload page with active compcat.
+    const compcat = document.querySelector('.compcat.active');
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('compcat', compcat.dataset.compcat);
+    window.location.href = currentUrl.toString();
+}
+
+/**
+ * Duplicate elements items.
+ * @param {*} id
+ * @param {*} table
+ * @returns {mixed}
+ */
+export const duplicateItem = (
+    id,
+    table,
+) => fetchMany(
+    [{
+        methodname: 'tiny_elements_duplicate_item',
+        args: {
+            id,
+            table,
+        }
+    }])[0];
+

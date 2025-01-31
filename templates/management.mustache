@@ -83,7 +83,9 @@
                             <div class="mt-auto">
                                 <a class="export" href="{{exportlink}}/{{id}}">
                                     {{#pix}} t/download, core, {{#str}} export, tiny_elements {{/str}}{{/pix}}</a>
-                                <a class="edit" href="#" data-id={{id}} data-table="compcat">
+                                <a class="duplicate" href="#" data-id="{{id}}" data-table="compcat">
+                                    {{#pix}} t/copy, core, {{#str}} duplicate {{/str}}{{/pix}}</a>
+                                <a class="edit" href="#" data-id="{{id}}" data-table="compcat">
                                     {{#pix}} t/edit, core, {{#str}} edit {{/str}}{{/pix}}</a>
                                 <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="compcat">
                                     {{#pix}} t/delete, core, {{#str}} delete {{/str}}{{/pix}}
@@ -116,6 +118,8 @@
                             <h5 class="card-title">{{displayname}}</h5>
                         </div>
                         <div class="mt-auto">
+                            <a class="duplicate" href="#" data-id="{{id}}" data-table="flavor">
+                                {{#pix}} t/copy, core, {{#str}} duplicate {{/str}}{{/pix}}</a>
                             <a class="edit" href="#" data-id="{{id}}" data-table="flavor">
                                 {{#pix}} t/edit, core, {{#str}} edit {{/str}}{{/pix}}</a>
                             <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="flavor">
@@ -158,7 +162,9 @@
                             <h5 class="card-title">{{displayname}}</h5>
                         </div>
                         <div class="d-flex mt-auto">
-                            <a class="edit" href="#" data-id={{id}} data-table="component">
+                            <a class="duplicate" href="#" data-id="{{id}}" data-table="component">
+                                {{#pix}} t/copy, core, {{#str}} duplicate {{/str}}{{/pix}}</a>
+                            <a class="edit" href="#" data-id="{{id}}" data-table="component">
                                 {{#pix}} t/edit, core, {{#str}} edit {{/str}}{{/pix}}
                             </a>
                             <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="component">
@@ -193,7 +199,9 @@
                             <h5 class="card-title">{{displayname}}</h5>
                         </div>
                         <div class="mt-auto">
-                            <a class="edit" href="#" data-id={{id}} data-table="variant">
+                            <a class="duplicate" href="#" data-id="{{id}}" data-table="variant">
+                                {{#pix}} t/copy, core, {{#str}} duplicate {{/str}}{{/pix}}</a>
+                            <a class="edit" href="#" data-id="{{id}}" data-table="variant">
                                 {{#pix}} t/edit, core, {{#str}} edit {{/str}}{{/pix}}</a>
                             <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="variant">
                                 {{#pix}} t/delete, core, {{#str}} delete {{/str}}{{/pix}}

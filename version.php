@@ -28,4 +28,4 @@ $plugin->component = 'tiny_elements';
 $plugin->release = '1.0.0';
 $plugin->requires = 2024042200;
 $plugin->maturity = MATURITY_BETA;
-$plugin->version = 2025013100;
+$plugin->version = 2025013101;

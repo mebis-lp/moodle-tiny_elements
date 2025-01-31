@@ -39,6 +39,7 @@ $string['componentname'] = 'Component name';
 $string['componentname_help'] = 'Name of the component use for internal use (also as a class name in CSS)';
 $string['components'] = 'Components';
 $string['content'] = 'Content';
+$string['copyof'] = 'Copy of {$a}';
 $string['css'] = 'CSS';
 $string['delete'] = 'Delete item "{$a}"';
 $string['deletewarning'] = 'Are you sure you want to delete this item.';
