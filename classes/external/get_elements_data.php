@@ -96,6 +96,7 @@ class get_elements_data extends external_api {
                     'id' => new external_value(PARAM_INT, 'the id of the flavor'),
                     'name' => new external_value(PARAM_TEXT, 'the name of the flavor'),
                     'displayname' => new external_value(PARAM_TEXT, 'the display name of the flavor'),
+                    'displayorder' => new external_value(PARAM_INT, 'the display order of the flavor'),
                     'content' => new external_value(PARAM_RAW, 'the content'),
                     'categories' => new external_value(PARAM_TEXT, 'the categories'),
                 ], 'a component flavor')

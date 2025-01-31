@@ -465,6 +465,7 @@ const getCategories = async() => {
     // Iterate over contexts.
     categories.forEach((category) => {
         let categoryFlavors = getCategoryFlavors(category.id);
+        categoryFlavors.sort((a, b) => a.displayorder - b.displayorder);
         let hasFlavors = hasCategoryFlavors(categoryFlavors);
          cats.push({
             categoryid: category.id,
@@ -516,6 +517,7 @@ const getCategoryFlavors = (categoryId) => {
                 id: flavor.id,
                 name: flavor.name,
                 displayname: flavor.displayname,
+                displayorder: flavor.displayorder,
             });
         }
     });

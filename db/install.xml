@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="lib/editor/tiny/plugins/elements/db" VERSION="20241125" COMMENT="XMLDB file for Moodle lib/editor/tiny/plugins/elements" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<XMLDB PATH="lib/editor/tiny/plugins/elements/db" VERSION="20250131" COMMENT="XMLDB file for Moodle lib/editor/tiny/plugins/elements"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
@@ -62,6 +63,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="displayname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="displayorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="content" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="css" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="hideforstudents" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false"/>
