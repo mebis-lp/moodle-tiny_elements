@@ -8,6 +8,14 @@
 /* Admin backend */
 #page-lib-editor-tiny-plugins-elements-management,
 #page-lib-editor-tiny-plugins-elements-printurls {
+    .col.item {
+        min-width: 250px;
+        max-width: 250px;
+        &.addcontainer .card {
+            background-color: lightgrey;
+        }
+    }
+
     .tiny_elements_thumbnail {
         width: 48px;
         height: 48px;
@@ -52,10 +60,6 @@
         border: 1px solid #0b5190;
     }
     
-    .card-title {
-        white-space: nowrap;
-    }
-
     .card-body {
         display: flex;
         flex-direction: column;
@@ -71,10 +75,6 @@
     
     form[data-formtype="tiny_elements_comp_flavor"] input.form-control {
         width: 100%;
-    }
-    
-    .addcontainer .card {
-        max-width: 9rem;
     }
 
     .compcat[data-compcat="found-items"] a {
