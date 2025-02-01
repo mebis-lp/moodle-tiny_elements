@@ -103,10 +103,6 @@ final class utils_test extends \advanced_testcase {
         $this->assertStringContainsString($flavorrecord1->css, $css);
         $this->assertStringContainsString($flavorrecord2->css, $css);
         $this->assertStringContainsString($flavorrecord3->css, $css);
-        $this->assertStringContainsString(
-            "body.tiny_elements_h4s .elements-buttons-preview button[data-flavor='$flavorrecord3->name']",
-            $css
-        );
 
         $dbreadsbefore = $DB->perf_get_queries();
         hook_callbacks::add_elements_data_to_dom($beforehttpheadershook);
@@ -120,10 +116,6 @@ final class utils_test extends \advanced_testcase {
         $this->assertStringContainsString($flavorrecord1->css, $css);
         $this->assertStringContainsString($flavorrecord2->css, $css);
         $this->assertStringContainsString($flavorrecord3->css, $css);
-        $this->assertStringContainsString(
-            "body.tiny_elements_h4s .elements-buttons-preview button[data-flavor='$flavorrecord3->name']",
-            $css
-        );
 
         $this->mock_clock_with_frozen($starttime + 20);
         $compcatrecord1 = $DB->get_record('tiny_elements_compcat', ['id' => $compcatrecord1id]);
@@ -146,10 +138,6 @@ final class utils_test extends \advanced_testcase {
         $this->assertStringContainsString($flavorrecord1->css, $css);
         $this->assertStringContainsString($flavorrecord2->css, $css);
         $this->assertStringContainsString($flavorrecord3->css, $css);
-        $this->assertStringNotContainsString(
-            "body.tiny_elements_h4s .elements-buttons-preview button[data-flavor='$flavorrecord3->name']",
-            $css
-        );
 
         // Check if it also works if we purge all the caches of moodle.
         purge_all_caches();
@@ -166,9 +154,5 @@ final class utils_test extends \advanced_testcase {
         $this->assertStringContainsString($flavorrecord1->css, $css);
         $this->assertStringContainsString($flavorrecord2->css, $css);
         $this->assertStringContainsString($flavorrecord3->css, $css);
-        $this->assertStringNotContainsString(
-            "body.tiny_elements_h4s .elements-buttons-preview button[data-flavor='$flavorrecord3->name']",
-            $css
-        );
     }
 }

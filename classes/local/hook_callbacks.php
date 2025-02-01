@@ -60,11 +60,6 @@ class hook_callbacks {
             return;
         }
 
-        // Add body class to hide elements not meant for students.
-        if (!has_capability('tiny/elements:manage', \context_system::instance())) {
-            $PAGE->add_body_class('tiny_elements_h4s');
-        }
-
         $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
         $rev = $cache->get(constants::CSS_CACHE_REV);
         if (!$rev) {
