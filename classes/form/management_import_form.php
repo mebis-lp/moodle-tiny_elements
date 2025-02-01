@@ -61,7 +61,6 @@ class management_import_form extends base_form {
      * @return array Returns whether a new source was created.
      */
     public function process_dynamic_submission(): array {
-        global $DB;
         $fs = get_file_storage();
         $data = $this->get_data();
         $draftitemid = $data->backupfile;
@@ -83,6 +82,8 @@ class management_import_form extends base_form {
         }
 
         \tiny_elements\local\utils::purge_css_cache();
+
+        $fs->delete_area_files(SYSCONTEXTID, 'tiny_elements', 'import', $draftitemid);
 
         return [
             'update' => true,

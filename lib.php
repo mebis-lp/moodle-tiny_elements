@@ -83,7 +83,12 @@ function tiny_elements_pluginfile(
         if (count($args) > 1) {
             $compcatid = (int)$args[1];
         }
-        send_stored_file($exporter->export($compcatid));
+
+        $exportfile = $exporter->export($compcatid);
+
+        send_stored_file($exportfile);
+
+        $exportfile->delete();
     } else if ($filearea === 'images') {
         $fs = get_file_storage();
         $fullpath = '/1/tiny_elements/images/' . implode('/', $args);
