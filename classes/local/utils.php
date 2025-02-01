@@ -25,6 +25,9 @@ namespace tiny_elements\local;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class utils {
+    /** @var array $flavors */
+    private static array $flavors;
+
     /**
      * Get all components.
      * @param bool $isstudent
@@ -32,7 +35,11 @@ class utils {
      */
     public static function get_all_components(bool $isstudent = false): array {
         global $DB;
-        $componentrecords = $DB->get_records('tiny_elements_component', null, 'displayorder');
+        $conditions = [];
+        if ($isstudent) {
+            $conditions['hideforstudents'] = 0;
+        }
+        $componentrecords = $DB->get_records('tiny_elements_component', $conditions, 'displayorder');
         $components = [];
         foreach ($componentrecords as $record) {
             $components[] = [
@@ -98,7 +105,7 @@ class utils {
      */
     public static function get_all_comp_flavors(bool $isstudent = false): array {
         global $DB;
-        $compflavors = $DB->get_records('tiny_elements_comp_flavor', null, '', 'id, componentname, flavorname');
+        $compflavors = $DB->get_records('tiny_elements_comp_flavor', [], '', 'id, componentname, flavorname');
         $components = [];
         foreach ($compflavors as $compflavor) {
             $components[$compflavor->componentname] = array_merge(
@@ -116,7 +123,11 @@ class utils {
      */
     public static function get_all_flavors(bool $isstudent = false): array {
         global $DB;
-        $flavors = $DB->get_records('tiny_elements_flavor');
+        $conditions = [];
+        if ($isstudent) {
+            $conditions['hideforstudents'] = 0;
+        }
+        $flavors = $DB->get_records('tiny_elements_flavor', $conditions, 'displayorder');
         $flavorsbyname = [];
         foreach ($flavors as $flavor) {
             $flavorsbyname[$flavor->name] = $flavor;
@@ -178,13 +189,11 @@ class utils {
         $componentcssentries = [];
         $variantscssentries = [];
         $components = [];
-        $componentshideforstudents = [];
-        $flavorshideforstudents = [];
         $variants = [];
         try {
-            $components = $DB->get_records('tiny_elements_component', null, '', 'id, name, css, iconurl, hideforstudents');
+            $components = $DB->get_records('tiny_elements_component', null, '', 'id, name, css, iconurl');
             $categorycssentries = $DB->get_fieldset('tiny_elements_compcat', 'css');
-            $flavors = $DB->get_records('tiny_elements_flavor', null, 'id, name, hideforstudents');
+            $flavors = $DB->get_records('tiny_elements_flavor', null, 'id, name');
             $flavorcssentries = $DB->get_fieldset('tiny_elements_flavor', 'css');
             $variants = $DB->get_records('tiny_elements_variant', null, '', 'name, iconurl, css');
         } catch (\dml_exception $e) {
@@ -211,19 +220,11 @@ class utils {
             );
         }
         foreach ($components as $component) {
-            if ($component->hideforstudents) {
-                $componentshideforstudents[] .= self::hide_item_css($component->name, 'component');
-            }
             $componentcssentries[] = $component->css;
             if (empty($component->iconurl)) {
                 continue;
             }
             $iconcssentries[] .= self::button_icon_css($component->name, self::replace_pluginfile_urls($component->iconurl, true));
-        }
-        foreach ($flavors as $flavor) {
-            if ($flavor->hideforstudents) {
-                $flavorshideforstudents[] .= self::hide_item_css($flavor->name, 'flavor');
-            }
         }
         $cssentries = array_merge(
             $categorycssentries,
@@ -231,8 +232,6 @@ class utils {
             $flavorcssentries,
             $variantscssentries,
             $iconcssentries,
-            $componentshideforstudents,
-            $flavorshideforstudents,
         );
         $css = array_reduce(
             $cssentries,
@@ -359,33 +358,6 @@ class utils {
             content: url('{$iconurl}');
         }
         CSS;
-    }
-
-    /**
-     * Get the css to hide for pupils.
-     *
-     * @param string $name
-     * @param string $type
-     * @return string
-     */
-    public static function hide_item_css(string $name, string $type): string {
-        if ($type == 'component') {
-            return <<<CSS
-            body.tiny_elements_h4s .elements-buttons-preview button[class^='elements-{$name}-icon'],
-            body.tiny_elements_h4s .elements-buttons-preview button[class*='elements-{$name}-icon'] {
-                display: none;
-            }
-            CSS;
-        } else if ($type == 'flavor') {
-            return <<<CSS
-            body.tiny_elements_h4s .elements-buttons-flavors button[data-flavor='{$name}'] {
-                display: none;
-            }
-            body.tiny_elements_h4s .elements-buttons-preview button[data-flavor='{$name}'] {
-                display: none;
-            }
-            CSS;
-        }
     }
 
     /**

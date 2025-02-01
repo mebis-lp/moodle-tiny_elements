@@ -37,7 +37,6 @@ function xmldb_tiny_elements_upgrade($oldversion): bool {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2025013100) {
-
         // Define field displayorder to be added to tiny_elements_flavor.
         $table = new xmldb_table('tiny_elements_flavor');
         $field = new xmldb_field('displayorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'displayname');

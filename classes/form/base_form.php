@@ -101,7 +101,7 @@ abstract class base_form extends dynamic_form {
             ($this->formtype == 'flavor' || $this->formtype == 'component')
             && !isset($formdata->hideforstudents)
         ) {
-                $formdata->hideforstudents = 0;
+            $formdata->hideforstudents = 0;
         }
 
         $formdata->timemodified = time();
@@ -175,7 +175,6 @@ abstract class base_form extends dynamic_form {
             ($newrecord && !(empty($formdata->css) && empty($formdata->iconurl)))
             || ($oldrecord->css != $formdata->css)
             || ($oldrecord->iconurl != $formdata->iconurl)
-            || (isset($oldrecord->hideforstudents) && $oldrecord->hideforstudents != $formdata->hideforstudents)
         ) {
             \tiny_elements\local\utils::purge_css_cache();
             \tiny_elements\local\utils::rebuild_css_cache();

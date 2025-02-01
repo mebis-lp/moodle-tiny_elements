@@ -77,7 +77,7 @@ let lastFlavor = [];
 export const handleAction = async(editor) => {
     contextid = getContextId(editor);
     userStudent = isStudent(editor);
-    let data = await getElementsData();
+    let data = await getElementsData(userStudent);
     components = data.components;
     categories = data.categories;
     flavors = data.flavors;
@@ -556,7 +556,7 @@ const getButtons = async(editor) => {
     return buttons;
 };
 
-const getElementsData = async() => {
+const getElementsData = async(userStudent = false) => {
     const data = await fetchMany([{
         methodname: 'tiny_elements_get_elements_data',
         args: {

@@ -16,10 +16,6 @@
 
 namespace tiny_elements;
 
-use moodle_exception;
-use stored_file;
-use tiny_elements\local\constants;
-
 /**
  * Class manager
  *
@@ -63,7 +59,7 @@ class manager {
      */
     public function delete_flavor(int $id): void {
         global $DB;
-        $sql = 'DELETE FROM {tiny_elements_comp_flavor} cf
+        $sql = 'DELETE FROM {tiny_elements_comp_flavor} 
                 WHERE flavorname IN (
                     SELECT name FROM {tiny_elements_flavor}
                     WHERE id = ?
@@ -80,7 +76,7 @@ class manager {
      */
     public function delete_variant(int $id): void {
         global $DB;
-        $sql = 'DELETE FROM {tiny_elements_comp_variant} cv
+        $sql = 'DELETE FROM {tiny_elements_comp_variant} 
                 WHERE variant IN (
                     SELECT name FROM {tiny_elements_variant}
                     WHERE id = ?
