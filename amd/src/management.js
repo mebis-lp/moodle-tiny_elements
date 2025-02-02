@@ -174,7 +174,7 @@ async function importModalSubmitted(e) {
         location.reload();
     } else {
         e.stopPropagation();
-        renderTemplate('tiny_elements/management_import_form_result', e.detail).then(async (html) => {
+        renderTemplate('tiny_elements/management_import_form_result', e.detail).then(async(html) => {
             await Notification.alert(
                 getString('import_simulation', 'tiny_elements'),
                 html,
