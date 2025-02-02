@@ -87,22 +87,6 @@ abstract class base_form extends dynamic_form {
     }
 
     /**
-     * Process the form submission, used if form was submitted via AJAX
-     *
-     * @return array Returns whether a new source was created.
-     */
-    public function process_dynamic_submission(): array {
-        $formdata = $this->get_data();
-
-
-        $this->set_data($formdata);
-
-        return [
-            'update' => true,
-        ];
-    }
-
-    /**
      * Load in existing data as form defaults
      */
     public function set_data_for_dynamic_submission(): void {
