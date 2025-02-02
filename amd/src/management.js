@@ -1,9 +1,10 @@
 import Modal from 'core/modal';
 import ModalForm from 'core_form/modalform';
+import Notification from 'core/notification';
 import {get_string as getString} from 'core/str';
 import {exception as displayException, deleteCancelPromise} from 'core/notification';
 import {call as fetchMany} from 'core/ajax';
-
+import {render as renderTemplate} from 'core/templates';
 class PreviewModal extends Modal {
     static TYPE = "tiny_elements/management_preview";
     static TEMPLATE = "tiny_elements/management_preview";
@@ -158,10 +159,32 @@ function importModal(e) {
         args: {},
         modalConfig: {title: title},
     });
-    // Reload page after submit.
-    modalForm.addEventListener(modalForm.events.FORM_SUBMITTED, () => location.reload());
+    modalForm.addEventListener(modalForm.events.FORM_SUBMITTED, importModalSubmitted);
 
     modalForm.show();
+}
+
+/**
+ * Process import form submit.
+ * @param {*} e
+ */
+async function importModalSubmitted(e) {
+    // Reload page after submit.
+    if (e.detail.update) {
+        location.reload();
+    } else {
+        e.stopPropagation();
+        renderTemplate('tiny_elements/management_import_form_result', e.detail).then(async (html) => {
+            await Notification.alert(
+                getString('import_simulation', 'tiny_elements'),
+                html,
+                getString('close', 'tiny_elements')
+            );
+            return true;
+        }).catch((error) => {
+            displayException(error);
+        });
+    }
 }
 
 /**

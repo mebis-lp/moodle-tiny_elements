@@ -37,6 +37,9 @@ class management_import_form extends base_form {
             null,
             ['accepted_types' => 'xml,zip']
         );
+
+        $mform->addElement('advcheckbox', 'whatif', get_string('whatif', 'tiny_elements'));
+        $mform->addHelpButton('whatif', 'whatif', 'tiny_elements');
     }
 
     /**
@@ -61,6 +64,7 @@ class management_import_form extends base_form {
      * @return array Returns whether a new source was created.
      */
     public function process_dynamic_submission(): array {
+        global $OUTPUT;
         $fs = get_file_storage();
         $data = $this->get_data();
         $draftitemid = $data->backupfile;
@@ -72,7 +76,9 @@ class management_import_form extends base_form {
         if ($file === null) {
             throw new \moodle_exception('errorbackupfile', 'tiny_elements');
         }
-        $importer = new \tiny_elements\importer();
+        $whatif = !empty($data->whatif);
+
+        $importer = new \tiny_elements\importer(SYSCONTEXTID, $whatif);
 
         if ($file->get_mimetype() == 'application/zip') {
             $importer->import($file);
@@ -81,13 +87,18 @@ class management_import_form extends base_form {
             $importer->importxml($xmlcontent);
         }
 
-        \tiny_elements\local\utils::purge_css_cache();
+        $return = ['update' => !$whatif];
+
+        if (!$whatif) {
+            \tiny_elements\local\utils::purge_css_cache();
+        } else {
+            $results = $importer->get_importresults();
+            $return['results'] = $results;
+        }
 
         $fs->delete_area_files(SYSCONTEXTID, 'tiny_elements', 'import', $draftitemid);
 
-        return [
-            'update' => true,
-        ];
+        return $return;
     }
 
     /**

@@ -31,12 +31,19 @@ class importer {
     /** @var int $contextid */
     protected int $contextid = 1;
 
+    /** @var bool $whatif */
+    protected bool $whatif = false;
+
+    /** @var array $importresults */
+    protected array $importresults = [];
+
     /**
      * Constructor.
      *
      * @param int $contextid
+     * @param bool $whatif If true, the import process is simulated without any changes (default is false).
      */
-    public function __construct(int $contextid = SYSCONTEXTID) {
+    public function __construct(int $contextid = SYSCONTEXTID, bool $whatif = false) {
         $this->contextid = $contextid;
     }
 
@@ -49,9 +56,10 @@ class importer {
      *
      * @param stored_file|string $zip The zip file to import, either as a file object or path.
      * @param int $draftitemid The draft item ID associated with the import process (default is 0).
+
      * @return void
      */
-    public function import(\stored_file|string $zip, $draftitemid = 0): void {
+    public function import(\stored_file|string $zip, int $draftitemid = 0): void {
         global $DB;
 
         if ($zip instanceof \stored_file || file_exists($zip)) {
@@ -63,8 +71,7 @@ class importer {
                 $xmlfile = $fs->get_file($this->contextid, 'tiny_elements', 'import', $draftitemid, '/', 'tiny_c4l_export.xml');
             }
             $xmlcontent = $xmlfile->get_content();
-            $importer = new importer($this->contextid);
-            $importer->importxml($xmlcontent);
+            $this->importxml($xmlcontent);
             $categories = $DB->get_records('tiny_elements_compcat');
             foreach ($categories as $category) {
                 $categoryfiles = $fs->get_directory_files(
@@ -76,14 +83,16 @@ class importer {
                     true,
                     false
                 );
-                $importer->importfiles($categoryfiles, $category->id, $category->name);
+                $this->importfiles($categoryfiles, $category->id, $category->name);
             }
             $fs->delete_area_files($this->contextid, 'tiny_elements', 'import', $draftitemid);
 
-            local\utils::purge_css_cache();
-            local\utils::rebuild_css_cache();
-            local\utils::purge_js_cache();
-            local\utils::rebuild_js_cache();
+            if (!$this->whatif) {
+                local\utils::purge_css_cache();
+                local\utils::rebuild_css_cache();
+                local\utils::purge_js_cache();
+                local\utils::rebuild_js_cache();
+            }
         }
     }
 
@@ -93,9 +102,10 @@ class importer {
      * @param array $files
      * @param int $categoryid
      * @param string $categoryname
+
      * @throws moodle_exception
      */
-    public function importfiles($files, $categoryid, $categoryname = '') {
+    public function importfiles(array $files, int $categoryid, string $categoryname = ''): void {
         $fs = get_file_storage();
         foreach ($files as $file) {
             if ($file->is_directory()) {
@@ -113,22 +123,30 @@ class importer {
                 )
             ) {
                 if ($oldfile->get_contenthash() != $file->get_contenthash()) {
-                    $oldfile->replace_file_with($file);
+                    if (!$this->whatif) {
+                        $oldfile->replace_file_with($file);
+                    }
+                    $this->importresults[] = get_string('replacefile', 'tiny_elements', $newfilepath . $file->get_filename());
+                } else {
+                    $this->importresults[] = get_string('unchangedfile', 'tiny_elements', $newfilepath . $file->get_filename());
                 }
             } else {
-                $newfile = $fs->create_file_from_storedfile([
-                    'contextid' => $this->contextid,
-                    'component' => 'tiny_elements',
-                    'filearea' => 'images',
-                    'itemid' => $categoryid,
-                    'filepath' => $newfilepath,
-                    'filename' => $file->get_filename(),
-                ], $file);
-                if (!$newfile) {
-                    throw new moodle_exception(
-                        get_string('error_fileimport', 'tiny_elements', $newfilepath . $file->get_filename())
-                    );
+                if (!$this->whatif) {
+                    $newfile = $fs->create_file_from_storedfile([
+                        'contextid' => $this->contextid,
+                        'component' => 'tiny_elements',
+                        'filearea' => 'images',
+                        'itemid' => $categoryid,
+                        'filepath' => $newfilepath,
+                        'filename' => $file->get_filename(),
+                    ], $file);
+                    if (!$newfile) {
+                        throw new moodle_exception(
+                            get_string('error_fileimport', 'tiny_elements', $newfilepath . $file->get_filename())
+                        );
+                    }
                 }
+                $this->importresults[] = get_string('newfile', 'tiny_elements', $newfilepath . $file->get_filename());
             }
         }
     }
@@ -214,21 +232,30 @@ class importer {
      * Import a component category.
      *
      * @param array|object $record
+
      * @return int id of the imported category
      */
-    public static function import_category(array|object $record): int {
+    public function import_category(array|object $record): int {
         global $DB;
         $record = (array) $record;
         $oldid = $record['id'];
         $current = $DB->get_record('tiny_elements_compcat', ['name' => $record['name']]);
         if ($current) {
             $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_compcat', $record);
+            if (!$this->whatif) {
+                $DB->update_record('tiny_elements_compcat', $record);
+            }
+            $this->importresults[] = get_string('replacecategory', 'tiny_elements', $record['name']);
         } else {
-            $record['id'] = $DB->insert_record('tiny_elements_compcat', $record);
+            if (!$this->whatif) {
+                $record['id'] = $DB->insert_record('tiny_elements_compcat', $record);
+            } else {
+                $record['id'] = rand(1, PHP_INT_MAX);
+            }
+            $this->importresults[] = get_string('newcategory', 'tiny_elements', $record['name']);
         }
         // Update pluginfile tags in css if the id has changed.
-        if ($oldid != $record['id']) {
+        if ($oldid != $record['id'] && !$this->whatif) {
             $record['css'] = utils::update_pluginfile_tags($oldid, $record['id'], $record['css']);
             $DB->update_record('tiny_elements_compcat', $record);
         }
@@ -240,9 +267,10 @@ class importer {
      *
      * @param array|object $record
      * @param array $categorymap
+
      * @return int id of the imported component
      */
-    public static function import_component(array|object $record, array $categorymap): int {
+    public function import_component(array|object $record, array $categorymap): int {
         global $DB;
         $record = (array) $record;
         if (isset($categorymap[$record['compcat']])) {
@@ -257,38 +285,48 @@ class importer {
         $current = $DB->get_record('tiny_elements_component', ['name' => $record['name']]);
         if ($current) {
             $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_component', $record);
+            if (!$this->whatif) {
+                $DB->update_record('tiny_elements_component', $record);
+            }
+            $this->importresults[] = get_string('replacecomponent', 'tiny_elements', $record['name']);
         } else {
             try {
-                $record['id'] = $DB->insert_record('tiny_elements_component', $record);
+                if (!$this->whatif) {
+                    $record['id'] = $DB->insert_record('tiny_elements_component', $record);
+                } else {
+                    $record['id'] = rand(1, PHP_INT_MAX);
+                }
+                $this->importresults[] = get_string('newcomponent', 'tiny_elements', $record['name']);
             } catch (\Exception $e) {
                 throw new moodle_exception(get_string('error_import_component', 'tiny_elements', $record['name']));
             }
         }
 
-        if (!empty($record['flavors'])) {
-            foreach (explode(',', $record['flavors']) as $flavor) {
-                if ($flavor == '') {
-                    continue;
+        if (!$this->whatif) {
+            if (!empty($record['flavors'])) {
+                foreach (explode(',', $record['flavors']) as $flavor) {
+                    if ($flavor == '') {
+                        continue;
+                    }
+                    $flavorrecord = [
+                        'componentname' => $record['name'],
+                        'flavorname' => $flavor,
+                    ];
+                    $DB->insert_record('tiny_elements_comp_flavor', $flavorrecord);
                 }
-                $flavorrecord = [
-                    'componentname' => $record['name'],
-                    'flavorname' => $flavor,
-                ];
-                $DB->insert_record('tiny_elements_comp_flavor', $flavorrecord);
             }
-        }
 
-        if (!empty($record['variants'])) {
-            foreach (explode(',', $record['variants']) as $variant) {
-                if ($variant == '') {
-                    continue;
+            if (!empty($record['variants'])) {
+                foreach (explode(',', $record['variants']) as $variant) {
+                    if ($variant == '') {
+                        continue;
+                    }
+                    $variantrecord = [
+                        'component' => $record['id'],
+                        'variant' => $variant,
+                    ];
+                    $DB->insert_record('tiny_elements_comp_variant', $variantrecord);
                 }
-                $variantrecord = [
-                    'component' => $record['id'],
-                    'variant' => $variant,
-                ];
-                $DB->insert_record('tiny_elements_comp_variant', $variantrecord);
             }
         }
 
@@ -302,7 +340,7 @@ class importer {
      * @param array $categorymap
      * @return int id of the imported flavor
      */
-    public static function import_flavor(array|object $record, array $categorymap): int {
+    public function import_flavor(array|object $record, array $categorymap): int {
         global $DB;
         $record = (array) $record;
         $current = $DB->get_record('tiny_elements_flavor', ['name' => $record['name']]);
@@ -312,9 +350,17 @@ class importer {
 
         if ($current) {
             $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_flavor', $record);
+            if (!$this->whatif) {
+                $DB->update_record('tiny_elements_flavor', $record);
+            }
+            $this->importresults[] = get_string('replaceflavor', 'tiny_elements', $record['name']);
         } else {
-            $record['id'] = $DB->insert_record('tiny_elements_flavor', $record);
+            if ($this->whatif) {
+                $record['id'] = $DB->insert_record('tiny_elements_flavor', $record);
+            } else {
+                $record['id'] = rand(1, PHP_INT_MAX);
+            }
+            $this->importresults[] = get_string('newflavor', 'tiny_elements', $record['name']);
         }
         return $record['id'];
     }
@@ -326,7 +372,7 @@ class importer {
      * @param array $categorymap
      * @return int id of the imported variant
      */
-    public static function import_variant(array|object $record, array $categorymap): int {
+    public function import_variant(array|object $record, array $categorymap): int {
         global $DB;
         $record = (array) $record;
         $current = $DB->get_record('tiny_elements_variant', ['name' => $record['name']]);
@@ -337,9 +383,17 @@ class importer {
 
         if ($current) {
             $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_variant', $record);
+            if (!$this->whatif) {
+                $DB->update_record('tiny_elements_variant', $record);
+            }
+            $this->importresults[] = get_string('replacevariant', 'tiny_elements', $record['name']);
         } else {
-            $record['id'] = $DB->insert_record('tiny_elements_variant', $record);
+            if (!$this->whatif) {
+                $record['id'] = $DB->insert_record('tiny_elements_variant', $record);
+            } else {
+                $record['id'] = rand(1, PHP_INT_MAX);
+            }
+            $this->importresults[] = get_string('newvariant', 'tiny_elements', $record['name']);
         }
         return $record['id'];
     }
@@ -351,7 +405,7 @@ class importer {
      * @param array $categorymap
      * @return int id of the imported relation
      */
-    public static function import_component_flavor(array|object $record, array $categorymap): int {
+    public function import_component_flavor(array|object $record, array $categorymap): int {
         global $DB;
         $record = (array) $record;
         $current = $DB->get_record(
@@ -363,9 +417,25 @@ class importer {
 
         if ($current) {
             $record['id'] = $current->id;
-            $DB->update_record('tiny_elements_comp_flavor', $record);
+            if (!$this->whatif) {
+                $DB->update_record('tiny_elements_comp_flavor', $record);
+            }
+            $this->importresults[] = get_string(
+                'replacecompflavor',
+                'tiny_elements',
+                $record['componentname'] . ' - ' . $record['flavorname']
+            );
         } else {
-            $record['id'] = $DB->insert_record('tiny_elements_comp_flavor', $record);
+            if (!$this->whatif) {
+                $record['id'] = $DB->insert_record('tiny_elements_comp_flavor', $record);
+            } else {
+                $record['id'] = rand(1, PHP_INT_MAX);
+            }
+            $this->importresults[] = get_string(
+                'newcompflavor',
+                'tiny_elements',
+                $record['componentname'] . ' - ' . $record['flavorname']
+            );
         }
         return $record['id'];
     }
@@ -377,7 +447,7 @@ class importer {
      * @param array $componentmap
      * @return int id of the imported relation
      */
-    public static function import_component_variant(array|object $record, array $componentmap): int {
+    public function import_component_variant(array|object $record, array $componentmap): int {
         global $DB;
         $record = (array) $record;
         if (isset($componentmap[$record['component']])) {
@@ -388,9 +458,32 @@ class importer {
             ['component' => $record['component'], 'variant' => $record['variant']]
         );
         if (!$current) {
-            $record['id'] = $DB->insert_record('tiny_elements_comp_variant', $record);
+            if (!$this->whatif) {
+                $record['id'] = $DB->insert_record('tiny_elements_comp_variant', $record);
+            } else {
+                $record['id'] = rand(1, PHP_INT_MAX);
+            }
+            $this->importresults[] = get_string(
+                'newcompvariant',
+                'tiny_elements',
+                $record['component'] . ' - ' . $record['variant']
+            );
             return $record['id'];
         }
+        $this->importresults[] = get_string(
+            'replacecompvariant',
+            'tiny_elements',
+            $record['component'] . ' - ' . $record['variant']
+        );
         return $current->id;
+    }
+
+    /**
+     * Get import results.
+     *
+     * @return array
+     */
+    public function get_importresults(): array {
+        return $this->importresults;
     }
 }
