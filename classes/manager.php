@@ -104,7 +104,7 @@ class manager {
                 )';
         $DB->execute($sql, [$id]);
         $DB->delete_records('tiny_elements_variant', ['id' => $id]);
-        
+
         // Purge CSS cache.
         \tiny_elements\local\utils::purge_css_cache();
         \tiny_elements\local\utils::rebuild_css_cache();

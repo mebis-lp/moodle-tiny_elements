@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tiny_elements\tests;
+namespace tiny_elements;
 
 use advanced_testcase;
 use tiny_elements\local\constants;
@@ -24,6 +24,10 @@ use tiny_elements\manager;
  * Class manager_test
  *
  * @package    tiny_elements
+ * @copyright  2025 ISB Bayern
+ * @author     Stefan Hanauska <stefan.hanauska@csg-in.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \tiny_elements\manager
  */
 final class manager_test extends advanced_testcase {
     /**
@@ -36,14 +40,44 @@ final class manager_test extends advanced_testcase {
         $draftitemid = file_get_unused_draft_itemid();
         file_prepare_draft_area($draftitemid, $manager->get_contextid(), 'tiny_elements', 'images', 0, constants::FILE_OPTIONS);
 
-        $categoryid = $manager->add_compcat((object)['name' => 'test', 'displayname' => 'test', 'css' => '', 'compcatfiles' => $draftitemid]);
-        $category2id = $manager->add_compcat((object)['name' => 'test2', 'displayname' => 'test2', 'css' => '', 'compcatfiles' => $draftitemid]);
+        $categoryid = $manager->add_compcat((object)[
+            'name' => 'test',
+            'displayname' => 'test',
+            'css' => '',
+            'compcatfiles' => $draftitemid,
+        ]);
+        $category2id = $manager->add_compcat((object)[
+            'name' => 'test2',
+            'displayname' => 'test2',
+            'css' => '',
+            'compcatfiles' => $draftitemid,
+        ]);
 
-        $flavorid = $manager->add_flavor((object)['name' => 'testflavor', 'displayname' => 'testflavor', 'css' => '', 'iconurl' => '']);
-        $flavor2id = $manager->add_flavor((object)['name' => 'testflavor2', 'displayname' => 'testflavor2', 'css' => '', 'iconurl' => '']);
+        $flavorid = $manager->add_flavor((object)[
+            'name' => 'testflavor',
+            'displayname' => 'testflavor',
+            'css' => '',
+            'iconurl' => '',
+        ]);
+        $flavor2id = $manager->add_flavor((object)[
+            'name' => 'testflavor2',
+            'displayname' => 'testflavor2',
+            'css' => '',
+            'iconurl' => '',
+        ]);
 
-        $variantid = $manager->add_variant((object)['name' => 'testvariant', 'displayname' => 'testvariant', 'css' => '', 'iconurl' => '']);
-        $variant2id = $manager->add_variant((object)['name' => 'testvariant2', 'displayname' => 'testvariant2', 'css' => '', 'iconurl' => '']);
+        $variantid = $manager->add_variant((object)[
+            'name' => 'testvariant',
+            'displayname' => 'testvariant',
+            'css' => '',
+            'iconurl' => '',
+        ]);
+        $variant2id = $manager->add_variant((object)[
+            'name' => 'testvariant2',
+            'displayname' => 'testvariant2',
+            'css' => '',
+            'iconurl' => '',
+        ]);
 
         $componentid = $manager->add_component((object)[
             'name' => 'testcomponent',
@@ -80,7 +114,7 @@ final class manager_test extends advanced_testcase {
     /**
      * Test delete_compcat method.
      */
-    public function test_delete_compcat() {
+    public function test_delete_compcat(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -94,22 +128,34 @@ final class manager_test extends advanced_testcase {
 
         $this->assertFalse($DB->record_exists('tiny_elements_compcat', ['id' => $data['categoryid']]));
         $this->assertFalse($DB->record_exists('tiny_elements_component', ['id' => $data['componentid']]));
-        $this->assertFalse($DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent', 'flavorname' => 'testflavor']));
-        $this->assertFalse($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant']));
-        $this->assertFalse($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2']));
+        $this->assertFalse(
+            $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent', 'flavorname' => 'testflavor'])
+        );
+        $this->assertFalse(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant'])
+        );
+        $this->assertFalse(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2'])
+        );
 
         $this->assertTrue($DB->record_exists('tiny_elements_compcat', ['id' => $data['category2id']]));
         $this->assertTrue($DB->record_exists('tiny_elements_component', ['id' => $data['component2id']]));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor']));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor2']));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['component2id'], 'variant' => 'testvariant']));
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor'])
+        );
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor2'])
+        );
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['component2id'], 'variant' => 'testvariant'])
+        );
     }
 
-    
+
     /**
      * Test delete_flavor method.
      */
-    public function test_delete_flavor() {
+    public function test_delete_flavor(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -133,7 +179,7 @@ final class manager_test extends advanced_testcase {
     /**
      * Test delete_variant method.
      */
-    public function test_delete_variant() {
+    public function test_delete_variant(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -157,7 +203,7 @@ final class manager_test extends advanced_testcase {
     /**
      * Test delete_component method.
      */
-    public function test_delete_component() {
+    public function test_delete_component(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -171,15 +217,27 @@ final class manager_test extends advanced_testcase {
 
         // Verify the component is deleted.
         $this->assertFalse($DB->record_exists('tiny_elements_component', ['id' => $data['componentid']]));
-        $this->assertFalse($DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent', 'flavorname' => 'testflavor']));
-        $this->assertFalse($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant']));
-        $this->assertFalse($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2']));
+        $this->assertFalse(
+            $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent', 'flavorname' => 'testflavor'])
+        );
+        $this->assertFalse(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant'])
+        );
+        $this->assertFalse(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2'])
+        );
 
         // Verify the other component is not deleted.
         $this->assertTrue($DB->record_exists('tiny_elements_component', ['id' => $data['component2id']]));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor']));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor2']));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['component2id'], 'variant' => 'testvariant']));
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor'])
+        );
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor2'])
+        );
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['component2id'], 'variant' => 'testvariant'])
+        );
     }
 
     /**
@@ -187,7 +245,7 @@ final class manager_test extends advanced_testcase {
      *
      * @return void
      */
-    public function test_add_compcat() {
+    public function test_add_compcat(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -197,7 +255,12 @@ final class manager_test extends advanced_testcase {
         $draftitemid = file_get_unused_draft_itemid();
         file_prepare_draft_area($draftitemid, $manager->get_contextid(), 'tiny_elements', 'images', 0, constants::FILE_OPTIONS);
 
-        $categoryid = $manager->add_compcat((object)['name' => 'test', 'displayname' => 'test', 'css' => '', 'compcatfiles' => $draftitemid]);
+        $categoryid = $manager->add_compcat((object)[
+            'name' => 'test',
+            'displayname' => 'test',
+            'css' => '',
+            'compcatfiles' => $draftitemid,
+        ]);
 
         $this->assertTrue($DB->record_exists('tiny_elements_compcat', ['id' => $categoryid]));
     }
@@ -207,14 +270,19 @@ final class manager_test extends advanced_testcase {
      *
      * @return void
      */
-    public function test_add_flavor() {
+    public function test_add_flavor(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
         $contextid = 1;
         $manager = new manager($contextid);
 
-        $flavorid = $manager->add_flavor((object)['name' => 'testflavor', 'displayname' => 'testflavor', 'css' => '', 'iconurl' => '']);
+        $flavorid = $manager->add_flavor((object)[
+            'name' => 'testflavor',
+            'displayname' => 'testflavor',
+            'css' => '',
+            'iconurl' => '',
+        ]);
 
         $this->assertTrue($DB->record_exists('tiny_elements_flavor', ['id' => $flavorid]));
     }
@@ -224,14 +292,19 @@ final class manager_test extends advanced_testcase {
      *
      * @return void
      */
-    public function test_add_variant() {
+    public function test_add_variant(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
         $contextid = 1;
         $manager = new manager($contextid);
 
-        $variantid = $manager->add_variant((object)['name' => 'testvariant', 'displayname' => 'testvariant', 'css' => '', 'iconurl' => '']);
+        $variantid = $manager->add_variant((object)[
+            'name' => 'testvariant',
+            'displayname' => 'testvariant',
+            'css' => '',
+            'iconurl' => '',
+        ]);
 
         $this->assertTrue($DB->record_exists('tiny_elements_variant', ['id' => $variantid]));
     }
@@ -241,7 +314,7 @@ final class manager_test extends advanced_testcase {
      *
      * @return void
      */
-    public function test_add_component() {
+    public function test_add_component(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -251,15 +324,21 @@ final class manager_test extends advanced_testcase {
         $data = $this->create_items($manager);
 
         $this->assertTrue($DB->record_exists('tiny_elements_component', ['id' => $data['componentid']]));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent', 'flavorname' => 'testflavor']));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant']));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2']));
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent', 'flavorname' => 'testflavor'])
+        );
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant'])
+        );
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2'])
+        );
     }
 
     /**
      * Test update_compcat method.
      */
-    public function test_update_compcat() {
+    public function test_update_compcat(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -271,7 +350,13 @@ final class manager_test extends advanced_testcase {
         $draftitemid = file_get_unused_draft_itemid();
         file_prepare_draft_area($draftitemid, $manager->get_contextid(), 'tiny_elements', 'images', 0, constants::FILE_OPTIONS);
 
-        $manager->update_compcat((object)['id' => $data['categoryid'], 'name' => 'changedname', 'displayname' => 'changeddisplayname', 'css' => '', 'compcatfiles' => $draftitemid]);
+        $manager->update_compcat((object)[
+            'id' => $data['categoryid'],
+            'name' => 'changedname',
+            'displayname' => 'changeddisplayname',
+            'css' => '',
+            'compcatfiles' => $draftitemid,
+        ]);
 
         $category = $DB->get_record('tiny_elements_compcat', ['id' => $data['categoryid']]);
         $this->assertEquals('changedname', $category->name);
@@ -284,7 +369,7 @@ final class manager_test extends advanced_testcase {
     /**
      * Test update_flavor method.
      */
-    public function test_update_flavor() {
+    public function test_update_flavor(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -293,7 +378,12 @@ final class manager_test extends advanced_testcase {
 
         $data = $this->create_items($manager);
 
-        $manager->update_flavor((object)['id' => $data['flavorid'], 'name' => 'changedname', 'displayname' => 'changeddisplayname', 'css' => '']);
+        $manager->update_flavor((object)[
+            'id' => $data['flavorid'],
+            'name' => 'changedname',
+            'displayname' => 'changeddisplayname',
+            'css' => '',
+        ]);
 
         $flavor = $DB->get_record('tiny_elements_flavor', ['id' => $data['flavorid']]);
         $this->assertEquals('changedname', $flavor->name);
@@ -306,7 +396,7 @@ final class manager_test extends advanced_testcase {
     /**
      * Test update_variant method.
      */
-    public function test_update_variant() {
+    public function test_update_variant(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -315,7 +405,13 @@ final class manager_test extends advanced_testcase {
 
         $data = $this->create_items($manager);
 
-        $manager->update_variant((object)['id' => $data['variantid'], 'name' => 'changedname', 'displayname' => 'changeddisplayname', 'css' => '', 'iconurl' => '']);
+        $manager->update_variant((object)[
+            'id' => $data['variantid'],
+            'name' => 'changedname',
+            'displayname' => 'changeddisplayname',
+            'css' => '',
+            'iconurl' => '',
+        ]);
 
         $variant = $DB->get_record('tiny_elements_variant', ['id' => $data['variantid']]);
         $this->assertEquals('changedname', $variant->name);
@@ -328,7 +424,7 @@ final class manager_test extends advanced_testcase {
     /**
      * Test update_component method.
      */
-    public function test_update_component() {
+    public function test_update_component(): void {
         global $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
@@ -353,9 +449,17 @@ final class manager_test extends advanced_testcase {
         $this->assertEquals('changedname', $component->name);
         $this->assertEquals('changeddisplayname', $component->displayname);
         $this->assertEquals($data['category2id'], $component->compcat);
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'changedname', 'flavorname' => 'testflavor2']));
-        $this->assertFalse($DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'changedname', 'flavorname' => 'testflavor']));
-        $this->assertTrue($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant']));
-        $this->assertFalse($DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2']));
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'changedname', 'flavorname' => 'testflavor2'])
+        );
+        $this->assertFalse(
+            $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'changedname', 'flavorname' => 'testflavor'])
+        );
+        $this->assertTrue(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant'])
+        );
+        $this->assertFalse(
+            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2'])
+        );
     }
 }
