@@ -18,6 +18,7 @@ namespace tiny_elements;
 
 use tiny_elements\local\constants;
 use tiny_elements\local\utils;
+use core\exception\moodle_exception;
 
 /**
  * Class importer

@@ -16,6 +16,9 @@
 
 namespace tiny_elements\form;
 
+use tiny_elements\local\constants;
+use core\exception\moodle_exception;
+
 /**
  * Class management_import_form
  *
@@ -35,7 +38,7 @@ class management_import_form extends base_form {
             'backupfile',
             get_string('file'),
             null,
-            ['accepted_types' => 'xml,zip']
+            constants::IMPORT_FILE_OPTIONS
         );
 
         $mform->addElement('advcheckbox', 'whatif', get_string('whatif', 'tiny_elements'));
@@ -64,21 +67,28 @@ class management_import_form extends base_form {
      * @return array Returns whether a new source was created.
      */
     public function process_dynamic_submission(): array {
-        global $OUTPUT;
+        $context = $this->get_context_for_dynamic_submission();
         $fs = get_file_storage();
         $data = $this->get_data();
         $draftitemid = $data->backupfile;
-        file_save_draft_area_files($draftitemid, SYSCONTEXTID, 'tiny_elements', 'import', $draftitemid);
-        $files = $fs->get_directory_files(SYSCONTEXTID, 'tiny_elements', 'import', $draftitemid, '/', false, false);
+        file_save_draft_area_files(
+            $draftitemid,
+            $context->id,
+            'tiny_elements',
+            'import',
+            $draftitemid,
+            constants::IMPORT_FILE_OPTIONS
+        );
+        $files = $fs->get_directory_files($context->id, 'tiny_elements', 'import', $draftitemid, '/', false, false);
         do {
             $file = array_pop($files);
         } while ($file !== null && $file->is_directory());
         if ($file === null) {
-            throw new \moodle_exception('errorbackupfile', 'tiny_elements');
+            throw new moodle_exception('errorbackupfile', 'tiny_elements');
         }
         $whatif = !empty($data->whatif);
 
-        $importer = new \tiny_elements\importer(SYSCONTEXTID, $whatif);
+        $importer = new \tiny_elements\importer($context->id, $whatif);
 
         if ($file->get_mimetype() == 'application/zip') {
             $importer->import($file);
@@ -96,7 +106,7 @@ class management_import_form extends base_form {
             $return['results'] = $results;
         }
 
-        $fs->delete_area_files(SYSCONTEXTID, 'tiny_elements', 'import', $draftitemid);
+        $fs->delete_area_files($context->id, 'tiny_elements', 'import', $draftitemid);
 
         return $return;
     }

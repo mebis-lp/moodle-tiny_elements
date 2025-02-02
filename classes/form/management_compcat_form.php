@@ -16,6 +16,7 @@
 
 namespace tiny_elements\form;
 
+use tiny_elements\local\constants;
 /**
  * Class management_compcat_form
  *
@@ -50,7 +51,30 @@ class management_compcat_form extends base_form {
         $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'css', get_string('css', 'tiny_elements'));
         $mform->setType('css', PARAM_RAW);
 
-        $options = ['accepted_types' => ['web_image'], 'subdirs' => 1];
-        $mform->addElement('filemanager', 'compcatfiles', get_string('files', 'tiny_elements'), null, $options);
+        $mform->addElement('filemanager', 'compcatfiles', get_string('files', 'tiny_elements'), null, constants::FILE_OPTIONS);
+    }
+
+    /**
+     * Process dynamic submission.
+     *
+     * @return array
+     */
+    public function process_dynamic_submission(): array {
+        parent::process_dynamic_submission();
+
+        $context = $this->get_context_for_dynamic_submission();
+        $formdata = $this->get_data();
+
+        $manager = new \tiny_elements\manager($context->id);
+
+        if (empty($formdata->id)) {
+            $result = $manager->add_compcat($formdata);
+        } else {
+            $result = $manager->update_compcat($formdata);
+        }
+
+        return [
+            'update' => $result,
+        ];
     }
 }

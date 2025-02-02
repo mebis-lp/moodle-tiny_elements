@@ -16,6 +16,8 @@
 
 namespace tiny_elements;
 
+use tiny_elements\local\constants;
+
 /**
  * Class manager
  *
@@ -37,6 +39,15 @@ class manager {
     }
 
     /**
+     * Get the context id.
+     *
+     * @return int
+     */
+    public function get_contextid(): int {
+        return $this->contextid;
+    }
+
+    /**
      * Delete a category.
      *
      * @param int $id
@@ -50,6 +61,12 @@ class manager {
             $this->delete_component($component->id);
         }
         // Todo: Delete all flavors and variants that were only used by this category.
+
+        // Purge CSS and JS cache.
+        \tiny_elements\local\utils::purge_css_cache();
+        \tiny_elements\local\utils::rebuild_css_cache();
+        \tiny_elements\local\utils::purge_js_cache();
+        \tiny_elements\local\utils::rebuild_js_cache();
     }
 
     /**
@@ -66,6 +83,10 @@ class manager {
                 )';
         $DB->execute($sql, [$id]);
         $DB->delete_records('tiny_elements_flavor', ['id' => $id]);
+
+        // Purge CSS cache.
+        \tiny_elements\local\utils::purge_css_cache();
+        \tiny_elements\local\utils::rebuild_css_cache();
     }
 
     /**
@@ -83,6 +104,10 @@ class manager {
                 )';
         $DB->execute($sql, [$id]);
         $DB->delete_records('tiny_elements_variant', ['id' => $id]);
+        
+        // Purge CSS cache.
+        \tiny_elements\local\utils::purge_css_cache();
+        \tiny_elements\local\utils::rebuild_css_cache();
     }
 
     /**
@@ -102,6 +127,12 @@ class manager {
         $sql = 'DELETE FROM {tiny_elements_comp_variant} WHERE component = ?';
         $DB->execute($sql, [$id]);
         $DB->delete_records('tiny_elements_component', ['id' => $id]);
+
+        // Purge CSS and JS cache.
+        \tiny_elements\local\utils::purge_css_cache();
+        \tiny_elements\local\utils::rebuild_css_cache();
+        \tiny_elements\local\utils::purge_js_cache();
+        \tiny_elements\local\utils::rebuild_js_cache();
     }
 
     /**
@@ -182,5 +213,251 @@ class manager {
             $newcomponent->name .= time();
             $newcomponent->id = $DB->insert_record('tiny_elements_component', $newcomponent);
         }
+    }
+
+    /**
+     * Add a category.
+     *
+     * @param object $data
+     * @return int id of the new category
+     */
+    public function add_compcat(object $data) {
+        global $DB;
+        $data->timecreated = time();
+        $data->timemodified = time();
+        $recordid = $DB->insert_record(constants::TABLES['compcat'], $data);
+        file_save_draft_area_files(
+            $data->compcatfiles,
+            $this->contextid,
+            'tiny_elements',
+            'images',
+            $recordid,
+            constants::FILE_OPTIONS
+        );
+
+        // Purge CSS cache if necessary.
+        if (!empty($data->css)) {
+            \tiny_elements\local\utils::purge_css_cache();
+            \tiny_elements\local\utils::rebuild_css_cache();
+        }
+
+        return $recordid;
+    }
+
+    /**
+     * Add a flavor.
+     *
+     * @param object $data
+     * @return int id of the new flavor
+     */
+    public function add_flavor(object $data) {
+        global $DB;
+        $data->timecreated = time();
+        $data->timemodified = time();
+
+        // Purge CSS cache if necessary.
+        if (!empty($data->css)) {
+            \tiny_elements\local\utils::purge_css_cache();
+            \tiny_elements\local\utils::rebuild_css_cache();
+        }
+
+        return $DB->insert_record(constants::TABLES['flavor'], $data);
+    }
+
+    /**
+     * Add a variant.
+     *
+     * @param object $data
+     * @return int id of the new variant
+     */
+    public function add_variant(object $data) {
+        global $DB;
+        $data->timecreated = time();
+        $data->timemodified = time();
+
+        // Purge CSS cache if necessary.
+        if (!empty($data->css) || !empty($data->iconurl)) {
+            \tiny_elements\local\utils::purge_css_cache();
+            \tiny_elements\local\utils::rebuild_css_cache();
+        }
+
+        return $DB->insert_record(constants::TABLES['variant'], $data);
+    }
+
+    /**
+     * Add a component.
+     *
+     * @param object $data
+     * @return int id of the new component
+     */
+    public function add_component(object $data) {
+        global $DB;
+        $data->timecreated = time();
+        $data->timemodified = time();
+
+        $data->id = $DB->insert_record(constants::TABLES['component'], $data);
+
+        // Purge CSS cache if necessary.
+        if (!empty($data->css) || !empty($data->iconurl)) {
+            \tiny_elements\local\utils::purge_css_cache();
+            \tiny_elements\local\utils::rebuild_css_cache();
+        }
+
+        // Purge JS cache if necessary.
+        if (!empty($data->js)) {
+            \tiny_elements\local\utils::purge_js_cache();
+            \tiny_elements\local\utils::rebuild_js_cache();
+        }
+
+        if (count($data->flavors) > 0) {
+            foreach ($data->flavors as $flavor) {
+                $DB->insert_record('tiny_elements_comp_flavor', [
+                    'componentname' => $data->name,
+                    'flavorname' => $flavor,
+                ]);
+            }
+        }
+
+        if (count($data->variants) > 0) {
+            foreach ($data->variants as $variant) {
+                $DB->insert_record('tiny_elements_comp_variant', [
+                    'component' => $data->id,
+                    'variant' => $variant,
+                ]);
+            }
+        }
+
+        return $data->id;
+    }
+
+    /**
+     * Update a category.
+     *
+     * @param object $data
+     * @return bool
+     */
+    public function update_compcat(object $data): bool {
+        global $DB;
+        $data->timemodified = time();
+        $oldrecord = $DB->get_record(constants::TABLES['compcat'], ['id' => $data->id]);
+        file_save_draft_area_files(
+            $data->compcatfiles,
+            $this->contextid,
+            'tiny_elements',
+            'images',
+            $data->id,
+            constants::FILE_OPTIONS
+        );
+
+        // Purge CSS cache if necessary.
+        if ($data->css != $oldrecord->css) {
+            \tiny_elements\local\utils::purge_css_cache();
+            \tiny_elements\local\utils::rebuild_css_cache();
+        }
+
+        return $DB->update_record(constants::TABLES['compcat'], $data);
+    }
+
+    /**
+     * Update a flavor.
+     *
+     * @param object $data
+     * @return bool
+     */
+    public function update_flavor(object $data): bool {
+        global $DB;
+        $data->timemodified = time();
+        $data->hideforstudents = !empty($data->hideforstudents);
+
+        $oldrecord = $DB->get_record(constants::TABLES['flavor'], ['id' => $data->id]);
+
+        // Purge CSS cache if necessary.
+        if ($data->css != $oldrecord->css) {
+            \tiny_elements\local\utils::purge_css_cache();
+            \tiny_elements\local\utils::rebuild_css_cache();
+        }
+
+        return $DB->update_record(constants::TABLES['flavor'], $data);
+    }
+
+    /**
+     * Update a variant.
+     *
+     * @param object $data
+     * @return bool
+     */
+    public function update_variant(object $data): bool {
+        global $DB;
+        $data->timemodified = time();
+
+        $oldrecord = $DB->get_record(constants::TABLES['variant'], ['id' => $data->id]);
+
+        // Purge CSS cache if necessary.
+        if ($data->css != $oldrecord->css || $data->iconurl != $oldrecord->iconurl) {
+            \tiny_elements\local\utils::purge_css_cache();
+            \tiny_elements\local\utils::rebuild_css_cache();
+        }
+
+        return $DB->update_record(constants::TABLES['variant'], $data);
+    }
+
+    /**
+     * Update a component.
+     *
+     * @param object $data
+     * @return bool
+     */
+    public function update_component(object $data): bool {
+        global $DB;
+        $data->timemodified = time();
+        $data->hideforstudents = !empty($data->hideforstudents);
+        $oldrecord = $DB->get_record(constants::TABLES['component'], ['id' => $data->id]);
+        $result = $DB->update_record(constants::TABLES['component'], $data);
+        // Update component flavors, keep existing iconurls.
+        if ($oldrecord) {
+            $records = $DB->get_records(
+                'tiny_elements_comp_flavor',
+                ['componentname' => $oldrecord->name],
+                '',
+                'flavorname, iconurl'
+            );
+            $DB->delete_records('tiny_elements_comp_flavor', ['componentname' => $oldrecord->name]);
+        }
+        if (count($data->flavors) > 0) {
+            foreach ($data->flavors as $flavor) {
+                $DB->insert_record('tiny_elements_comp_flavor', [
+                    'componentname' => $data->name,
+                    'flavorname' => $flavor,
+                    'iconurl' => $records[$flavor]->iconurl ?? '',
+                ]);
+            }
+        }
+        // Update component variants.
+        if ($oldrecord) {
+            $records = $DB->get_records('tiny_elements_comp_variant', ['component' => $oldrecord->id]);
+            $DB->delete_records('tiny_elements_comp_variant', ['component' => $oldrecord->id]);
+        }
+        if (count($data->variants) > 0) {
+            foreach ($data->variants as $variant) {
+                $DB->insert_record('tiny_elements_comp_variant', [
+                    'component' => $data->id,
+                    'variant' => $variant,
+                ]);
+            }
+        }
+
+        // Purge CSS cache if necessary.
+        if ($data->css != $oldrecord->css) {
+            \tiny_elements\local\utils::purge_css_cache();
+            \tiny_elements\local\utils::rebuild_css_cache();
+        }
+
+        // Purge JS cache if necessary.
+        if (($oldrecord->js != $data->js)) {
+            \tiny_elements\local\utils::purge_js_cache();
+            \tiny_elements\local\utils::rebuild_js_cache();
+        }
+
+        return $result;
     }
 }
