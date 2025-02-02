@@ -97,6 +97,10 @@ class management_comp_flavor_form extends dynamic_form {
             $result &= $DB->update_record('tiny_elements_comp_flavor', $record);
         }
 
+        // Purge CSS cache.
+        \tiny_elements\local\utils::purge_css_cache();
+        \tiny_elements\local\utils::rebuild_css_cache();
+
         return [
             'update' => $result,
         ];
