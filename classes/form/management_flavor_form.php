@@ -63,8 +63,6 @@ class management_flavor_form extends base_form {
      * @return array
      */
     public function process_dynamic_submission(): array {
-        parent::process_dynamic_submission();
-
         $context = $this->get_context_for_dynamic_submission();
         $formdata = $this->get_data();
         $this->postprocess_editors($formdata);
