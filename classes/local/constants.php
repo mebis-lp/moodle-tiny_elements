@@ -63,4 +63,10 @@ class constants {
 
     /** @var string JS_CACHE_REV the cache key for the js revision */
     public const JS_CACHE_REV = 'tiny_elements_jsrev';
+
+    /** @var array FILE_OPTIONS the options for the filemanager */
+    public const FILE_OPTIONS = ['subdirs' => 1, 'accepted_types' => ['web_image']];
+
+    /** @var array IMPORT_FILE_OPTIONS the options for the filemanager */
+    public const IMPORT_FILE_OPTIONS = ['subdirs' => 0, 'accepted_types' => 'xml,zip', 'maxfiles' => 1];
 }

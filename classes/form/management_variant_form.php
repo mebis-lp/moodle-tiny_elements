@@ -66,4 +66,28 @@ class management_variant_form extends base_form {
         $mform->setDefault('c4lcompatibility', 0);
         $mform->addHelpButton('c4lcompatibility', 'c4lcompatibility', 'tiny_elements');
     }
+
+    /**
+     * Process dynamic submission.
+     *
+     * @return array
+     */
+    public function process_dynamic_submission(): array {
+        parent::process_dynamic_submission();
+
+        $context = $this->get_context_for_dynamic_submission();
+        $formdata = $this->get_data();
+
+        $manager = new \tiny_elements\manager($context->id);
+
+        if (empty($formdata->id)) {
+            $result = $manager->add_variant($formdata);
+        } else {
+            $result = $manager->update_variant($formdata);
+        }
+
+        return [
+            'update' => $result,
+        ];
+    }
 }

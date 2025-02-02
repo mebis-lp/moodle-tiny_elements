@@ -56,4 +56,28 @@ class management_flavor_form extends base_form {
         $mform->addElement('checkbox', 'hideforstudents', get_string('hideforstudents', 'tiny_elements'));
         $mform->setType('hideforstudents', PARAM_INT);
     }
+
+    /**
+     * Process dynamic submission.
+     *
+     * @return array
+     */
+    public function process_dynamic_submission(): array {
+        parent::process_dynamic_submission();
+
+        $context = $this->get_context_for_dynamic_submission();
+        $formdata = $this->get_data();
+
+        $manager = new \tiny_elements\manager($context->id);
+
+        if (empty($formdata->id)) {
+            $result = $manager->add_flavor($formdata);
+        } else {
+            $result = $manager->update_flavor($formdata);
+        }
+
+        return [
+            'update' => $result,
+        ];
+    }
 }

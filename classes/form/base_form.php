@@ -19,6 +19,7 @@ namespace tiny_elements\form;
 use tiny_elements\local\utils;
 use core_form\dynamic_form;
 use context;
+use tiny_elements\local\constants;
 
 /**
  * Class base_form
@@ -91,103 +92,12 @@ abstract class base_form extends dynamic_form {
      * @return array Returns whether a new source was created.
      */
     public function process_dynamic_submission(): array {
-        global $DB;
-
-        $context = $this->get_context_for_dynamic_submission();
-
         $formdata = $this->get_data();
-
-        if (
-            ($this->formtype == 'flavor' || $this->formtype == 'component')
-            && !isset($formdata->hideforstudents)
-        ) {
-            $formdata->hideforstudents = 0;
-        }
-
-        $formdata->timemodified = time();
-        $newrecord = empty($formdata->id);
 
         $this->postprocess_editors($formdata);
 
-        $table = 'tiny_elements_' . $this->formtype;
-        // Update existing records.
-        if ($newrecord) {
-            // Insert new record.
-            $formdata->timecreated = time();
-            $result = $DB->insert_record($table, $formdata);
-            $recordid = $result;
-        } else {
-            $oldrecord = $DB->get_record($table, ['id' => $formdata->id]);
-            $result = $DB->update_record($table, $formdata);
-            $recordid = $formdata->id;
-        }
-
-        // Save files for Compcat form.
-        if ($this->formtype === 'compcat') {
-            file_save_draft_area_files(
-                $formdata->compcatfiles,
-                $context->id,
-                'tiny_elements',
-                'images',
-                $recordid,
-                ['subdirs' => 1, 'accepted_types' => ['image']]
-            );
-        }
-
-        if ($this->formtype === 'component') {
-            // Update component flavors.
-            if ($oldrecord) {
-                $records = $DB->get_records(
-                    'tiny_elements_comp_flavor',
-                    ['componentname' => $oldrecord->name],
-                    '',
-                    'flavorname, iconurl'
-                );
-                $DB->delete_records('tiny_elements_comp_flavor', ['componentname' => $oldrecord->name]);
-            }
-            if (count($formdata->flavors) > 0) {
-                foreach ($formdata->flavors as $flavor) {
-                    $DB->insert_record('tiny_elements_comp_flavor', [
-                        'componentname' => $formdata->name,
-                        'flavorname' => $flavor,
-                        'iconurl' => $records[$flavor]->iconurl ?? '',
-                    ]);
-                }
-            }
-
-            // Update component variants.
-            if ($oldrecord) {
-                $records = $DB->get_records('tiny_elements_comp_variant', ['component' => $oldrecord->id]);
-                $DB->delete_records('tiny_elements_comp_variant', ['component' => $oldrecord->id]);
-            }
-            if (count($formdata->variants) > 0) {
-                foreach ($formdata->variants as $variant) {
-                    $DB->insert_record('tiny_elements_comp_variant', [
-                        'component' => $formdata->id,
-                        'variant' => $variant,
-                    ]);
-                }
-            }
-        }
-
-        // Purge CSS to show new one.
-        if (
-            ($newrecord && !(empty($formdata->css) && empty($formdata->iconurl)))
-            || ($oldrecord->css != $formdata->css)
-            || ($oldrecord->iconurl != $formdata->iconurl)
-        ) {
-            \tiny_elements\local\utils::purge_css_cache();
-            \tiny_elements\local\utils::rebuild_css_cache();
-        }
-
-        // Purge JS to show new one.
-        if (($newrecord && !empty($formdata->js)) || ($oldrecord->js != $formdata->js)) {
-            \tiny_elements\local\utils::purge_js_cache();
-            \tiny_elements\local\utils::rebuild_js_cache();
-        }
-
         return [
-            'update' => $result,
+            'update' => true,
         ];
     }
 
@@ -214,7 +124,7 @@ abstract class base_form extends dynamic_form {
                 'tiny_elements',
                 'images',
                 $id,
-                ['subdirs' => 1, 'accepted_types' => ['web_image']],
+                constants::FILE_OPTIONS,
             );
             $source->compcatfiles = $draftitemid;
         }

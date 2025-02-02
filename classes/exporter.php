@@ -25,6 +25,7 @@ require_once($CFG->dirroot . '/backup/util/xml/output/memory_xml_output.class.ph
 
 use tiny_elements\local\utils;
 use tiny_elements\local\constants;
+use core\exception\moodle_exception;
 use memory_xml_output;
 use xml_writer;
 
