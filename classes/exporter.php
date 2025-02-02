@@ -185,7 +185,7 @@ class exporter {
     ): void {
         global $DB;
 
-        $sql = '1';
+        $sql = ' = componentname';
         $params = [];
 
         if (!empty($compcatid)) {
@@ -198,14 +198,14 @@ class exporter {
         $this->write_elements($xmlwriter, constants::TABLES['compflavor'], $compflavors);
         $flavornames = array_unique(array_column($compflavors, 'flavor'));
 
-        $sql = '1';
+        $sql = ' = name';
         if (!empty($compcatid)) {
             [$sql, $params] = $DB->get_in_or_equal($flavornames, SQL_PARAMS_QM, 'param', true, '');
         }
         $flavors = $DB->get_records_sql('SELECT * FROM {' . constants::TABLES['flavor'] . '} WHERE name ' . $sql, $params);
         $this->write_elements($xmlwriter, constants::TABLES['flavor'], $flavors);
 
-        $sql = '1';
+        $sql = ' = component';
         if (!empty($compcatid)) {
             [$sql, $params] = $DB->get_in_or_equal($componentids, SQL_PARAMS_QM, 'param', true, '0');
         }
@@ -216,7 +216,7 @@ class exporter {
         $this->write_elements($xmlwriter, constants::TABLES['compvariant'], $compvariants);
         $variantnames = array_unique(array_column($compvariants, 'variant'));
 
-        $sql = '1';
+        $sql = ' = name';
         if (!empty($compcatid)) {
             [$sql, $params] = $DB->get_in_or_equal($variantnames, SQL_PARAMS_QM, 'param', true, '');
         }
