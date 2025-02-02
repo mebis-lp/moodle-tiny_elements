@@ -70,6 +70,8 @@ class management_import_form extends base_form {
         $context = $this->get_context_for_dynamic_submission();
         $fs = get_file_storage();
         $data = $this->get_data();
+        $this->postprocess_editors($data);
+
         $draftitemid = $data->backupfile;
         file_save_draft_area_files(
             $draftitemid,

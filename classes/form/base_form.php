@@ -94,7 +94,8 @@ abstract class base_form extends dynamic_form {
     public function process_dynamic_submission(): array {
         $formdata = $this->get_data();
 
-        $this->postprocess_editors($formdata);
+
+        $this->set_data($formdata);
 
         return [
             'update' => true,
@@ -216,7 +217,7 @@ abstract class base_form extends dynamic_form {
      *
      * @param object $formdata
      */
-    private function postprocess_editors(&$formdata) {
+    protected function postprocess_editors(&$formdata) {
         if (isset($formdata->css['text'])) {
             $formdata->css = $formdata->css['text'];
         }

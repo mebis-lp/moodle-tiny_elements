@@ -102,6 +102,7 @@ class management_component_form extends base_form {
 
         $context = $this->get_context_for_dynamic_submission();
         $formdata = $this->get_data();
+        $this->postprocess_editors($formdata);
 
         $manager = new \tiny_elements\manager($context->id);
 
