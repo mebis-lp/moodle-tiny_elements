@@ -21,25 +21,25 @@ use tiny_elements\local\utils;
 use context;
 
 /**
- * Form for bulk editing displaynames of flavors
+ * Form for bulk editing displaynames of variants
  *
  * @package    tiny_elements
  * @copyright  2025 ISB Bayern
  * @author     Stefan Hanauska <stefan.hanauska@csg-in.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class management_displaynames_flavors_form extends dynamic_form {
+class management_displaynames_variants_form extends dynamic_form {
     /**
      * Form definition
      */
     public function definition() {
         global $DB;
-        $count = $DB->count_records('tiny_elements_flavor');
+        $count = $DB->count_records('tiny_elements_variant');
         $mform =& $this->_form;
 
         $group = [];
         $group[] = $mform->createElement('hidden', 'id');
-        $group[] = $mform->createElement('static', 'name', get_string('flavor', 'tiny_elements'));
+        $group[] = $mform->createElement('static', 'name', get_string('variant', 'tiny_elements'));
         $group[] = $mform->createElement('text', 'displayname', get_string('displayname', 'tiny_elements'));
 
         $options = [
@@ -94,7 +94,7 @@ class management_displaynames_flavors_form extends dynamic_form {
             $record = new \stdClass();
             $record->id = $id;
             $record->displayname = $formdata->displayname[$key];
-            $result &= $DB->update_record('tiny_elements_flavor', $record);
+            $result &= $DB->update_record('tiny_elements_variant', $record);
         }
 
         return [
@@ -108,16 +108,16 @@ class management_displaynames_flavors_form extends dynamic_form {
     public function set_data_for_dynamic_submission(): void {
         global $DB;
 
-        $flavors = $DB->get_records('tiny_elements_flavor');
+        $variants = $DB->get_records('tiny_elements_variant');
 
         $data = [];
-        foreach ($flavors as $flavor) {
-            $data['id'][] = $flavor->id;
-            $data['name'][] = $flavor->name;
-            $data['displayname'][] = $flavor->displayname;
+        foreach ($variants as $variant) {
+            $data['id'][] = $variant->id;
+            $data['name'][] = $variant->name;
+            $data['displayname'][] = $variant->displayname;
         }
 
-        $data['itemcount'] = count($flavors);
+        $data['itemcount'] = count($variants);
 
         $this->set_data($data);
     }
