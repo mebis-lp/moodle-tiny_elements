@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['additem'] = 'Add item';
+$string['bulk_edit_displaynames'] = 'Bulk edit displaynames';
 $string['button_elements'] = 'Elements';
 $string['c4lcompatibility'] = 'If checked, the variant class name will be c4l-...-variant instead of elements-...-variant for compatibility with the original c4l components.';
 $string['c4lcompatibility_help'] = 'c4l (components for learning) is the plugin elements is based on.';
@@ -35,6 +36,7 @@ $string['code'] = 'Code';
 $string['code_help'] = 'HTML code to insert. You can use {{VARIANTS}}, {{FLAVOR}} and {{PLACEHOLDER}} as placeholders for variants, flavors and text to be inserted.';
 $string['compcat'] = 'Categories';
 $string['compflavor_icons'] = 'Change button icons for components depending on flavors';
+$string['component'] = 'Component';
 $string['component_flavor'] = 'Component/flavor';
 $string['componentname'] = 'Component name';
 $string['componentname_help'] = 'Name of the component use for internal use (also as a class name in CSS)';
