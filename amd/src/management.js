@@ -74,6 +74,11 @@ export const init = async(params) => {
         displaynamesModal(e);
     });
 
+    let displaynamesflavorbutton = document.getElementById('elements_displaynames_flavor_button');
+    displaynamesflavorbutton.addEventListener('click', async(e) => {
+        displaynamesFlavorModal(e);
+    });
+
     // Add listener to duplicate items.
     let duplicateitems = document.getElementsByClassName('duplicate');
     duplicateitems.forEach(element => {
@@ -222,6 +227,28 @@ function displaynamesModal(e) {
     const modalForm = new ModalForm({
         // Load displaynames bulk edit form.
         formClass: "tiny_elements\\form\\management_displaynames_form",
+        args: {},
+        modalConfig: {title: title},
+    });
+
+    // Reload page after submit.
+    modalForm.addEventListener(modalForm.events.FORM_SUBMITTED, () => location.reload());
+
+    modalForm.show();
+}
+
+/**
+ * Load modal to edit displaynames.
+ * @param {*} e
+ * @returns {void}
+ */
+function displaynamesFlavorModal(e) {
+    e.preventDefault();
+    let title = getString('manage', 'tiny_elements');
+
+    const modalForm = new ModalForm({
+        // Load displaynames bulk edit form.
+        formClass: "tiny_elements\\form\\management_displaynames_flavors_form",
         args: {},
         modalConfig: {title: title},
     });

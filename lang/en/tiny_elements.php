@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['additem'] = 'Add item';
 $string['bulk_edit_displaynames'] = 'Bulk edit displaynames';
+$string['bulk_edit_flavor_displaynames'] = 'Bulk edit flavor displaynames';
 $string['button_elements'] = 'Elements';
 $string['c4lcompatibility'] = 'If checked, the variant class name will be c4l-...-variant instead of elements-...-variant for compatibility with the original c4l components.';
 $string['c4lcompatibility_help'] = 'c4l (components for learning) is the plugin elements is based on.';
