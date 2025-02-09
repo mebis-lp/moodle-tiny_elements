@@ -356,7 +356,7 @@ class importer {
             }
             $this->importresults[] = get_string('replaceflavor', 'tiny_elements', $record['name']);
         } else {
-            if ($this->whatif) {
+            if (!$this->whatif) {
                 $record['id'] = $DB->insert_record('tiny_elements_flavor', $record);
             } else {
                 $record['id'] = rand(1, PHP_INT_MAX);
