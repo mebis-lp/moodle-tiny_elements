@@ -377,7 +377,18 @@ class manager {
             \tiny_elements\local\utils::rebuild_css_cache();
         }
 
-        return $DB->update_record(constants::TABLES['flavor'], $data);
+        $result = $DB->update_record(constants::TABLES['flavor'], $data);
+
+        if ($oldrecord->name != $data->name) {
+            $result &= $DB->execute(
+                'UPDATE {tiny_elements_comp_flavor}
+                 SET flavorname = ?
+                 WHERE flavorname = ?',
+                [$data->name, $oldrecord->name]
+            );
+        }
+
+        return $result;
     }
 
     /**
@@ -398,7 +409,18 @@ class manager {
             \tiny_elements\local\utils::rebuild_css_cache();
         }
 
-        return $DB->update_record(constants::TABLES['variant'], $data);
+        $result = $DB->update_record(constants::TABLES['variant'], $data);
+
+        if ($oldrecord->name != $data->name) {
+            $result &= $DB->execute(
+                'UPDATE {tiny_elements_comp_variant}
+                 SET variant = ?
+                 WHERE variant = ?',
+                [$data->name, $oldrecord->name]
+            );
+        }
+
+        return $result;
     }
 
     /**

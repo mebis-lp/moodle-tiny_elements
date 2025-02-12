@@ -27,20 +27,10 @@ import {
 } from './helper';
 
 let variantPreferences = {};
-let VARIANTS = [];
-let COMPONENTS = [];
-let FLAVORS = [];
+let DATA = {};
 
-export const setFlavors = (flavors) => {
-    FLAVORS = flavors;
-};
-
-export const setVariants = (variants) => {
-    VARIANTS = variants;
-};
-
-export const setComponents = (components) => {
-    COMPONENTS = components;
+export const setData = (data) => {
+    DATA = data;
 };
 
 export const getVariantPreferences = () => {
@@ -67,8 +57,8 @@ export const loadVariantPreferences = (preferences) => {
  * @returns
  */
 export const getVariantPreference = (component, flavor = '') => {
-    let componentObj = findByName(COMPONENTS, component);
-    let flavorObj = findByName(FLAVORS, flavor);
+    let componentObj = findByName(DATA.getComponents(), component);
+    let flavorObj = findByName(DATA.getFlavors(), flavor);
 
     if (componentObj === undefined) {
         return [];
@@ -102,7 +92,7 @@ export const getVariantPreference = (component, flavor = '') => {
  * @returns {bool}
  */
 export const variantExists = (component, variant, flavor = '') => {
-    let variantObj = findByName(VARIANTS, variant);
+    let variantObj = findByName(DATA.getVariants(), variant);
     return getVariantPreference(component, flavor).indexOf(variantObj.id) !== -1;
 };
 
@@ -116,7 +106,7 @@ export const variantExists = (component, variant, flavor = '') => {
 export const getVariantsClass = (component, flavor = '') => {
     let variants = [];
     getVariantPreference(component, flavor).forEach(variant => {
-        let variantObj = findById(VARIANTS, variant);
+        let variantObj = findById(DATA.getVariants(), variant);
         if (variantObj !== undefined) {
             variants.push((variantObj.c4lcompatibility ? 'c4l' : 'elements') + '-' + variantObj.name + '-variant');
         }
@@ -135,9 +125,9 @@ export const getVariantsHtml = (component) => {
     let variantsHtml = '';
     let variantObj = {};
 
-    let componentObj = findByName(COMPONENTS, component);
+    let componentObj = findByName(DATA.getComponents(), component);
     componentObj.variants.forEach(variant => {
-        variantObj = findByName(VARIANTS, variant);
+        variantObj = findByName(DATA.getVariants(), variant);
         if (variantObj != undefined) {
             variantsHtml += variantObj.content;
         }
@@ -156,7 +146,7 @@ export const getVariantHtml = (variant) => {
     let variantHtml = [];
     let variantObj = {};
 
-    variantObj = findByName(VARIANTS, variant);
+    variantObj = findByName(DATA.getVariants(), variant);
     if (variantObj != undefined) {
         variantHtml = variantObj.html;
     }
@@ -171,9 +161,9 @@ export const getVariantHtml = (variant) => {
  * @param {string} flavor Flavor name
  */
 export const addVariant = (component, variant, flavor = '') => {
-    let componentObj = findByName(COMPONENTS, component);
-    let variantObj = findByName(VARIANTS, variant);
-    let flavorObj = findByName(FLAVORS, flavor);
+    let componentObj = findByName(DATA.getComponents(), component);
+    let variantObj = findByName(DATA.getVariants(), variant);
+    let flavorObj = findByName(DATA.getFlavors(), flavor);
 
     if (flavor == '') {
         if (!variantPreferences[componentObj.id]) {
@@ -200,9 +190,9 @@ export const addVariant = (component, variant, flavor = '') => {
  * @param {string} flavor Flavor name
  */
 export const removeVariant = (component, variant, flavor = '') => {
-    let componentObj = findByName(COMPONENTS, component);
-    let variantObj = findByName(VARIANTS, variant);
-    let flavorObj = findByName(FLAVORS, flavor);
+    let componentObj = findByName(DATA.getComponents(), component);
+    let variantObj = findByName(DATA.getVariants(), variant);
+    let flavorObj = findByName(DATA.getFlavors(), flavor);
 
     if (flavor != '') {
         let index = variantPreferences[componentObj.id + '-' + flavorObj.id].indexOf(variantObj.id);

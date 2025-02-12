@@ -21,10 +21,8 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {component} from './common';
 import ElementsModal from './modal';
 import ModalFactory from 'core/modal_factory';
-import {get_strings as getStrings} from 'core/str';
 import {
     isStudent,
     showPreview
@@ -38,36 +36,22 @@ import {
     getVariantsHtml,
     loadVariantPreferences,
     removeVariant,
-    setFlavors,
-    setVariants,
-    variantExists,
-    setComponents
+    setData as setVariantsData
 } from './variantslib';
-import {
-    findByName
-} from './helper';
 import {
     savePreferences,
     loadPreferences,
     Preferences
 } from './preferencelib';
-import {call as fetchMany} from 'core/ajax';
 import {getContextId} from 'editor_tiny/options';
-
-let userStudent = false;
-
-let previewElements = true;
-let components = [];
-let categories = [];
-let flavors = [];
-let variants = [];
-let langStrings = {};
-let contextid = 1;
+import Data from './data';
 
 let currentFlavor = '';
 let currentFlavorId = 0;
 let currentCategoryId = 1;
 let lastFlavor = [];
+
+let data = {};
 
 /**
  * Handle action
@@ -75,18 +59,14 @@ let lastFlavor = [];
  * @param {TinyMCE} editor
  */
 export const handleAction = async(editor) => {
-    contextid = getContextId(editor);
-    userStudent = isStudent(editor);
-    let data = await getElementsData(userStudent);
-    components = data.components;
-    categories = data.categories;
-    flavors = data.flavors;
-    variants = data.variants;
-    setComponents(components);
-    setVariants(variants);
-    setFlavors(flavors);
-    previewElements = showPreview(editor);
-    langStrings = await getAllStrings();
+    data = new Data(
+        getContextId(editor),
+        isStudent(editor),
+        showPreview(editor)
+    );
+    await data.loadData();
+    setVariantsData(data);
+
     currentCategoryId = await loadPreferences(Preferences.category);
     lastFlavor = await loadPreferences(Preferences.category_flavors);
     if (lastFlavor === null) {
@@ -106,8 +86,7 @@ export const handleAction = async(editor) => {
  * @param  {TinyMCE} editor
  */
 const displayDialogue = async(editor) => {
-    const data = Object.assign({}, {});
-    const templateContext = await getTemplateContext(editor, data);
+    const templateContext = data.getTemplateContext(editor);
     // Show modal with buttons.
     const modal = await ModalFactory.create({
         type: ElementsModal.TYPE,
@@ -116,7 +95,7 @@ const displayDialogue = async(editor) => {
     });
 
     // Choose class to modal.
-    const modalClass = previewElements ? 'elements-modal' : 'elements-modal-no-preview';
+    const modalClass = data.getPreviewElements() ? 'elements-modal' : 'elements-modal-no-preview';
 
     // Set class to modal.
     editor.targetElm.closest('body').classList.add(modalClass);
@@ -158,7 +137,7 @@ const displayDialogue = async(editor) => {
         node.addEventListener('click', (event) => {
             handleButtonClick(event, editor, modal);
         });
-        if (previewElements) {
+        if (data.getPreviewElements()) {
             node.addEventListener('mouseenter', (event) => {
                 handleButtonMouseEvent(event, modal, true);
             });
@@ -252,7 +231,7 @@ const handleCategoryFlavorClick = (event, modal) => {
         ) {
             componentButton.classList.remove('elements-hidden');
             if (componentButton.dataset.flavorlist != '') {
-                let variants = getVariantsClass(components[componentButton.dataset.id].name, currentFlavor);
+                let variants = getVariantsClass(data.getComponentById(componentButton.dataset.id).name, currentFlavor);
                 let availableVariants = componentButton.querySelectorAll('.elements-button-variant');
                 availableVariants.forEach((variant) => {
                     updateVariantButtonState(variant, variants.indexOf(variant.dataset.variantclass) != -1);
@@ -301,14 +280,14 @@ const handleModalHidden = (editor) => {
 
 const updateComponentCode = (componentCode, selectedButton, placeholder, flavor = '') => {
     componentCode = componentCode.replace('{{PLACEHOLDER}}', placeholder);
-
+    const comp = data.getComponentById(selectedButton);
     // Return active variants for current component.
-    const variants = getVariantsClass(components[selectedButton].name, flavor);
+    const variants = getVariantsClass(comp.name, flavor);
 
     // Apply variants to html component.
     if (variants.length > 0) {
         componentCode = componentCode.replace('{{VARIANTS}}', variants.join(' '));
-        componentCode = componentCode.replace('{{VARIANTSHTML}}', getVariantsHtml(components[selectedButton].name));
+        componentCode = componentCode.replace('{{VARIANTSHTML}}', getVariantsHtml(comp.name));
     } else {
         componentCode = componentCode.replace('{{VARIANTS}}', '');
         componentCode = componentCode.replace('{{VARIANTSHTML}}', '');
@@ -320,8 +299,8 @@ const updateComponentCode = (componentCode, selectedButton, placeholder, flavor 
         componentCode = componentCode.replace('{{FLAVOR}}', '');
     }
 
-    componentCode = componentCode.replace('{{COMPONENT}}', components[selectedButton].name);
-    componentCode = componentCode.replace('{{CATEGORY}}', categories[currentCategoryId].name);
+    componentCode = componentCode.replace('{{COMPONENT}}', comp.name);
+    componentCode = componentCode.replace('{{CATEGORY}}', data.getCategoryById(currentCategoryId).name);
 
     // Apply random IDs.
     componentCode = applyRandomID(componentCode);
@@ -342,13 +321,15 @@ const updateComponentCode = (componentCode, selectedButton, placeholder, flavor 
 const handleButtonClick = async(event, editor, modal) => {
     const selectedButton = event.target.closest('button').dataset.id;
 
-    // Component button.
-    if (components[selectedButton]) {
-        const sel = editor.selection.getContent();
-        let componentCode = components[selectedButton].code;
-        const placeholder = (sel.length > 0 ? sel : components[selectedButton].text);
+    const comp = data.getComponentById(selectedButton);
 
-        let flavor = components[selectedButton].flavors.length > 0 ? currentFlavor : '';
+    // Component button.
+    if (comp) {
+        const sel = editor.selection.getContent();
+        let componentCode = comp.code;
+        const placeholder = (sel.length > 0 ? sel : comp.text);
+
+        let flavor = comp.flavors.length > 0 ? currentFlavor : '';
 
         // Create a new node to replace the placeholder.
         const randomId = generateRandomID();
@@ -381,9 +362,10 @@ const handleButtonMouseEvent = (event, modal, show) => {
     const selectedButton = event.target.closest('button').dataset.id;
     const node = modal.getRoot()[0].querySelector('div[data-id="code-preview-' + selectedButton + '"]');
     const previewDefault = modal.getRoot()[0].querySelector('div[data-id="code-preview-default"]');
-    let flavor = components[selectedButton].flavors.length > 0 ? currentFlavor : '';
+    const comp = data.getComponentById(selectedButton);
+    let flavor = comp.flavors.length > 0 ? currentFlavor : '';
 
-    node.innerHTML = updateComponentCode(components[selectedButton].code, selectedButton, components[selectedButton].text, flavor);
+    node.innerHTML = updateComponentCode(comp.code, selectedButton, comp.text, flavor);
 
     if (node) {
         if (show) {
@@ -397,26 +379,6 @@ const handleButtonMouseEvent = (event, modal, show) => {
 };
 
 /**
- * Handle a mouse events mouseenter/mouseleave in a variant button.
- * Not used at the moment.
- *
- * @param {MouseEvent} event The mouseenter/mouseleave event
- * @param {obj} modal
- * @param {bool} show
- */
-// eslint-disable-next-line no-unused-vars
-const handleVariantMouseEvent = (event, modal, show) => {
-    const variant = event.target.closest('span');
-    const variantEnabled = variant.dataset.state == 'on';
-    const button = event.target.closest('button');
-
-    if (!variantEnabled) {
-        updateVariantComponentState(variant, button, modal, show, false);
-    }
-};
-
-
-/**
  * Handle a mouse event within the variant buttons.
  *
  * @param {MouseEvent} event The mouseenter/mouseleave event
@@ -426,207 +388,18 @@ const handleVariantClick = (event, modal) => {
     event.stopPropagation();
     const variant = event.target.closest('span');
     const button = event.target.closest('button');
-    const flavor = components[button.dataset.id].flavors.length > 0 ? currentFlavor : '';
+    const comp = data.getComponentById(button.dataset.id);
+    const flavor = comp.flavors.length > 0 ? currentFlavor : '';
 
     updateVariantComponentState(variant, button, modal, false, true);
 
     const node = modal.getRoot()[0].querySelector('div[data-id="code-preview-' + button.dataset.id + '"]');
     node.innerHTML = updateComponentCode(
-        components[button.dataset.id].code,
+        comp.code,
         button.dataset.id,
-        components[button.dataset.id].text,
+        comp.text,
         flavor
     );
-};
-
-/**
- * Get the template context for the dialogue.
- *
- * @param {Editor} editor
- * @param {object} data
- * @returns {object} data
- */
-const getTemplateContext = async(editor, data) => {
-    return Object.assign({}, {
-        elementid: editor.id,
-        buttons: await getButtons(editor),
-        categories: await getCategories(),
-        preview: previewElements,
-    }, data);
-};
-
-/**
- * Get the Elements categories for the dialogue.
- *
- * @returns {object} data
- */
-const getCategories = async() => {
-    const cats = [];
-    // Iterate over contexts.
-    categories.forEach((category) => {
-        let categoryFlavors = getCategoryFlavors(category.id);
-        categoryFlavors.sort((a, b) => a.displayorder - b.displayorder);
-        let hasFlavors = hasCategoryFlavors(categoryFlavors);
-         cats.push({
-            categoryid: category.id,
-            name: category.displayname,
-            type: category.id,
-            displayorder: category.displayorder,
-            flavors: categoryFlavors,
-            hasFlavors: hasFlavors,
-            active: '',
-        });
-    });
-    // Sort by displayorder and set first to active.
-    cats.sort((a, b) => a.displayorder - b.displayorder);
-    if (cats.length > 0) {
-        cats[0].active = 'active';
-        if (cats[0].flavors.length > 0) {
-            cats[0].flavors[0].factive = 'active';
-        }
-    }
-
-    return cats;
-};
-
-const getComponentVariants = (component) => {
-    const componentVariants = [];
-    component.variants.forEach(variant => {
-        let variantitem = findByName(variants, variant);
-        if (variantitem !== undefined) {
-            let state = variantExists(component.name, variantitem.name) ? 'on' : 'off';
-            componentVariants.push({
-                id: variantitem.id,
-                name: variantitem.name,
-                state: state,
-                imageClass: variantitem.name + '-variant-' + state,
-                variantclass: (variantitem.c4lcompatibility ? 'c4l' : 'elements') + '-' + variantitem.name + '-variant',
-                title: langStrings.get(variantitem.name),
-                content: variantitem.content,
-            });
-        }
-    });
-    return componentVariants;
-};
-
-const getCategoryFlavors = (categoryId) => {
-    const categoryFlavors = [];
-    flavors.forEach(flavor => {
-        if (flavor.categories == categoryId || flavor.categories.split(',').includes(categoryId)) {
-            categoryFlavors.push({
-                id: flavor.id,
-                name: flavor.name,
-                displayname: flavor.displayname,
-                displayorder: flavor.displayorder,
-            });
-        }
-    });
-    return categoryFlavors;
-};
-
-const hasCategoryFlavors = (value) => {
-    return Array.isArray(value) && value.length;
-};
-
-/**
- * Get the Elements buttons for the dialogue.
- *
- * @param {Editor} editor
- * @returns {object} buttons
- */
-const getButtons = async(editor) => {
-    const buttons = [];
-    // Not used at the moment.
-    // eslint-disable-next-line no-unused-vars
-    const sel = editor.selection.getContent();
-    Object.values(components).forEach(component => {
-        buttons.push({
-            id: component.id,
-            name: component.displayname,
-            type: component.compcat,
-            imageClass: 'elements-' + component.name + '-icon',
-            htmlcode: component.code,
-            variants: getComponentVariants(component, variants),
-            flavorlist: component.flavors.join(','),
-            category: component.compcat,
-        });
-    });
-    buttons.sort((a, b) => a.displayorder - b.displayorder);
-
-    return buttons;
-};
-
-const getElementsData = async(userStudent = false) => {
-    const data = await fetchMany([{
-        methodname: 'tiny_elements_get_elements_data',
-        args: {
-            isstudent: userStudent,
-            contextid: contextid
-        },
-    }])[0];
-
-    // TODO error handling.
-    const indexedComponents = [];
-    data.components.forEach(component => {
-        indexedComponents[component.id] = component;
-    });
-
-    const indexedVariants = [];
-    data.variants.forEach(variant => {
-        indexedVariants[variant.id] = variant;
-    });
-
-    const indexedCategories = [];
-    data.categories.forEach(category => {
-        indexedCategories[category.id] = category;
-    });
-
-    return {
-        components: indexedComponents,
-        variants: indexedVariants,
-        categories: indexedCategories,
-        flavors: data.flavors,
-    };
-};
-
-/**
- * Get variants for the dialogue.
- * Not used at the moment.
- *
- * @param  {string} component
- * @param  {object} elements
- * @return {object} Variants for a component
- */
-// eslint-disable-next-line no-unused-vars
-const getVariantsState = (component, elements) => {
-    const variants = [];
-    let variantState = '';
-    let variantClass = '';
-
-    // Max 3 variants.
-    if (elements.length > 3) {
-        elements = elements.slice(0, 2);
-    }
-
-    elements.forEach((variant, index) => {
-        if (variantExists(component, variant)) {
-            variantState = 'on';
-            variantClass = 'on ';
-        } else {
-            variantState = 'off';
-            variantClass = '';
-        }
-        variantClass += variant + '-variant-' + variantState;
-        variants.push({
-            id: index,
-            name: variant,
-            state: variantState,
-            imageClass: variantClass,
-            title: langStrings.get(variant),
-        });
-    });
-
-    return variants;
 };
 
 /**
@@ -646,27 +419,28 @@ const updateVariantComponentState = (variant, button, modal, show, updateHtml) =
         .querySelector('div[data-id="code-preview-' + button.dataset.id + '"] .' + componentClass);
     const variantPreview = modal.getRoot()[0]
         .querySelector('span[data-id="variantHTML-' + button.dataset.id + '"]');
+    const comp = data.getComponentById(selectedButton);
     let variantsHtml = '';
-    let hasflavors = components[selectedButton].flavors.length > 0;
+    let hasflavors = comp.flavors.length > 0;
 
     if (previewComponent) {
         if (updateHtml) {
             if (variant.dataset.state == 'on') {
-                removeVariant(components[selectedButton].name, variant.dataset.variant, hasflavors ? currentFlavor : '');
+                removeVariant(comp.name, variant.dataset.variant, hasflavors ? currentFlavor : '');
                 updateVariantButtonState(variant, false);
                 previewComponent.classList.remove(selectedVariant);
             } else {
-                addVariant(components[selectedButton].name, variant.dataset.variant, hasflavors ? currentFlavor : '');
+                addVariant(comp.name, variant.dataset.variant, hasflavors ? currentFlavor : '');
                 updateVariantButtonState(variant, true);
                 previewComponent.classList.add(selectedVariant);
             }
 
             // Update variant preview HTML.
             if (variantPreview) {
-                variantPreview.innerHTML = getVariantsHtml(components[selectedButton].name);
+                variantPreview.innerHTML = getVariantsHtml(comp.name);
             }
         } else {
-            variantsHtml = getVariantsHtml(components[selectedButton].name);
+            variantsHtml = getVariantsHtml(comp.name);
             if (show) {
                 previewComponent.classList.add(selectedVariant);
                 variantsHtml += getVariantHtml(variant.dataset.variant);
@@ -682,10 +456,10 @@ const updateVariantComponentState = (variant, button, modal, show, updateHtml) =
     } else {
         // Update variants preferences.
         if (variant.dataset.state == 'on') {
-            removeVariant(components[selectedButton].name, variant.dataset.variant, hasflavors ? currentFlavor : '');
+            removeVariant(comp.name, variant.dataset.variant, hasflavors ? currentFlavor : '');
             updateVariantButtonState(variant, false);
         } else {
-            addVariant(components[selectedButton].name, variant.dataset.variant, hasflavors ? currentFlavor : '');
+            addVariant(comp.name, variant.dataset.variant, hasflavors ? currentFlavor : '');
             updateVariantButtonState(variant, true);
         }
     }
@@ -735,7 +509,7 @@ const applyLangStrings = (text) => {
     const compRegex = /{{#([^}]*)}}/g;
 
     [...text.matchAll(compRegex)].forEach(strLang => {
-        text = text.replace('{{#' + strLang[1] + '}}', langStrings.get(strLang[1]));
+        text = text.replace('{{#' + strLang[1] + '}}', data.getLangString(strLang[1]));
     });
 
     return text;
@@ -763,33 +537,4 @@ const applyRandomID = (text) => {
     }
 
     return text;
-};
-
-/**
- * Get language strings.
- *
- * @return {object} Language strings
- */
-const getAllStrings = async() => {
-    const keys = [];
-    const compRegex = /{{#([^}]*)}}/g;
-
-    components.forEach(element => {
-        // Get lang strings from components.
-        [...element.code.matchAll(compRegex)].forEach(strLang => {
-            if (keys.indexOf(strLang[1]) === -1) {
-                keys.push(strLang[1]);
-            }
-        });
-
-        // Get lang strings from text placeholders.
-        [...element.text.matchAll(compRegex)].forEach(strLang => {
-            if (keys.indexOf(strLang[1]) === -1) {
-                keys.push(strLang[1]);
-            }
-        });
-    });
-
-    const stringValues = await getStrings(keys.map((key) => ({key, component})));
-    return new Map(keys.map((key, index) => ([key, stringValues[index]])));
 };
