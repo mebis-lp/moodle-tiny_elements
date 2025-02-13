@@ -125,6 +125,9 @@
                             <a class="delete" href="#" data-id="{{id}}" data-title="{{displayname}}" data-table="flavor">
                                 {{#pix}} t/delete, core, {{#str}} delete {{/str}}{{/pix}}
                             </a>
+                            <a class="buttonicons" href="#" data-flavor="{{name}}">
+                                {{#pix}} i/mahara_host, core, {{#str}} compflavor_icons, tiny_elements {{/str}}{{/pix}}
+                            </a>
                         </div>
                     {{/id}}
                     {{^id}}
@@ -178,6 +181,9 @@
                             </a>
                             <a class="preview" id="comp_{{name}}" href="#" data-component="{{name}}" data-flavors="{{#flavorsarr}}{{.}} {{/flavorsarr}}">
                                 {{#pix}} t/preview, core, {{#str}} previewcss, tiny_elements {{/str}}{{/pix}}
+                            </a>
+                            <a class="buttonicons" href="#" data-component="{{name}}">
+                                {{#pix}} i/mahara_host, core, {{#str}} compflavor_icons, tiny_elements {{/str}}{{/pix}}
                             </a>
                         </div>
                     {{/id}}

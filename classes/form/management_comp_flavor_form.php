@@ -34,8 +34,26 @@ class management_comp_flavor_form extends dynamic_form {
      */
     public function definition() {
         global $DB;
-        $count = $DB->count_records('tiny_elements_comp_flavor');
+
+        $data = $this->_ajaxformdata;
+
+        $conditions = [];
+
+        if (!empty($data['component'])) {
+            $conditions['componentname'] = $data['component'];
+        }
+
+        if (!empty($data['flavor'])) {
+            $conditions['flavorname'] = $data['flavor'];
+        }
+
+        $count = $DB->count_records('tiny_elements_comp_flavor', $conditions);
         $mform =& $this->_form;
+
+        $mform->addElement('hidden', 'component');
+        $mform->setType('component', PARAM_TEXT);
+        $mform->addElement('hidden', 'flavor');
+        $mform->setType('flavor', PARAM_TEXT);
 
         $group = [];
         $group[] = $mform->createElement('hidden', 'id');
@@ -112,7 +130,19 @@ class management_comp_flavor_form extends dynamic_form {
     public function set_data_for_dynamic_submission(): void {
         global $DB;
 
-        $compflavor = $DB->get_records('tiny_elements_comp_flavor');
+        $data = $this->_ajaxformdata;
+
+        $conditions = [];
+
+        if (!empty($data['component'])) {
+            $conditions['componentname'] = $data['component'];
+        }
+
+        if (!empty($data['flavor'])) {
+            $conditions['flavorname'] = $data['flavor'];
+        }
+
+        $compflavor = $DB->get_records('tiny_elements_comp_flavor', $conditions);
 
         $data = [];
         foreach ($compflavor as $item) {

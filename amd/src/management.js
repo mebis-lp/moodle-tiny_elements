@@ -69,6 +69,13 @@ export const init = async(params) => {
         compflavorModal(e);
     });
 
+    let buttonicons = document.querySelectorAll('.buttonicons');
+    buttonicons.forEach(element => {
+        element.addEventListener('click', async(e) => {
+            compflavorModal(e);
+        });
+    });
+
     let displaynamesbutton = document.getElementById('elements_displaynames_button');
     displaynamesbutton.addEventListener('click', async(e) => {
         displaynamesModal(e);
@@ -209,11 +216,16 @@ async function importModalSubmitted(e) {
 function compflavorModal(e) {
     e.preventDefault();
     let title = getString('manage', 'tiny_elements');
-
+    const target = e.target.closest('.buttonicons');
+    const component = target.dataset.component ?? '';
+    const flavor = target.dataset.flavor ?? '';
     const modalForm = new ModalForm({
         // Load import form.
         formClass: "tiny_elements\\form\\management_comp_flavor_form",
-        args: {},
+        args: {
+            component: component,
+            flavor: flavor,
+        },
         modalConfig: {title: title},
     });
 
