@@ -50,7 +50,7 @@ let currentFlavor = '';
 let currentFlavorId = 0;
 let currentCategoryId = 1;
 let lastFlavor = [];
-
+let sel = '';
 let data = {};
 
 /**
@@ -59,6 +59,7 @@ let data = {};
  * @param {TinyMCE} editor
  */
 export const handleAction = async(editor) => {
+    sel = editor.selection.getContent();
     data = new Data(
         getContextId(editor),
         isStudent(editor),
@@ -325,7 +326,6 @@ const handleButtonClick = async(event, editor, modal) => {
 
     // Component button.
     if (comp) {
-        const sel = editor.selection.getContent();
         let componentCode = comp.code;
         const placeholder = (sel.length > 0 ? sel : comp.text);
 
@@ -363,9 +363,12 @@ const handleButtonMouseEvent = (event, modal, show) => {
     const node = modal.getRoot()[0].querySelector('div[data-id="code-preview-' + selectedButton + '"]');
     const previewDefault = modal.getRoot()[0].querySelector('div[data-id="code-preview-default"]');
     const comp = data.getComponentById(selectedButton);
+
     let flavor = comp.flavors.length > 0 ? currentFlavor : '';
 
-    node.innerHTML = updateComponentCode(comp.code, selectedButton, comp.text, flavor);
+    const placeholder = (sel.length > 0 ? sel : comp.text);
+
+    node.innerHTML = updateComponentCode(comp.code, selectedButton, placeholder, flavor);
 
     if (node) {
         if (show) {
