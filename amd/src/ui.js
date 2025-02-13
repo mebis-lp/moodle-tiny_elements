@@ -158,7 +158,7 @@ const displayDialogue = async(editor) => {
     // Select first or saved category.
     if (soleCategories.length > 0 || selectCategories.length > 0) {
         let savedCategory = currentCategoryId;
-        if (soleCategories[0].displayorder > selectCategories[0].displayorder) {
+        if (soleCategories.length == 0 || soleCategories[0].displayorder > selectCategories[0].displayorder) {
             selectCategories[0].click();
         } else {
             soleCategories[0].click();
