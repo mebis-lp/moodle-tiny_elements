@@ -118,7 +118,7 @@ class management_displaynames_form extends dynamic_form {
         $data = [];
         foreach ($components as $component) {
             $data['id'][] = $component->id;
-            $data['longname'][] =  $categories[$component->compcat]->name . '/' . $component->name;
+            $data['longname'][] = $categories[$component->compcat]->name . '/' . $component->name;
             $data['name'][] = $component->name;
             $data['displayname'][] = $component->displayname;
         }
