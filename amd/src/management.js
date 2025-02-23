@@ -64,11 +64,6 @@ export const init = async(params) => {
     });
 
     // Add listener to manage component flavor relation.
-    let compflavor = document.getElementById('elements_compflavor_button');
-    compflavor.addEventListener('click', async(e) => {
-        compflavorModal(e);
-    });
-
     let buttonicons = document.querySelectorAll('.buttonicons');
     buttonicons.forEach(element => {
         element.addEventListener('click', async(e) => {

@@ -143,13 +143,11 @@
         {{/flavor}}
     </div>
 
-    {{#showbulkedit}}
-    <div class="row">
+    <div class="row{{^showbulkedit}} hidden{{/showbulkedit}}">
         <div class="col mb-4"> 
             <button id="elements_displaynames_flavor_button" class="btn btn-secondary">{{#str}} bulk_edit_flavor_displaynames, tiny_elements {{/str}}</button>
         </div>
     </div>
-    {{/showbulkedit}}
     
     <h2>{{#str}} components, tiny_elements {{/str}} </h2>
 
@@ -196,13 +194,11 @@
         {{/component}}
     </div>
 
-    {{#showbulkedit}}
-    <div class="row">
+    <div class="row{{^showbulkedit}} hidden{{/showbulkedit}}">
         <div class="col mb-4"> 
             <button id="elements_displaynames_button" class="btn btn-secondary">{{#str}} bulk_edit_displaynames, tiny_elements {{/str}}</button>
         </div>
     </div>
-    {{/showbulkedit}}
 
     <h2>{{#str}} variants, tiny_elements {{/str}}</h2>
     <div class="row row-cols-12">
@@ -236,12 +232,10 @@
             </div>
         {{/variant}}
     </div>
-    
-    {{#showbulkedit}}
-    <div class="row">
+
+    <div class="row{{^showbulkedit}} hidden{{/showbulkedit}}">
         <div class="col mb-4"> 
             <button id="elements_displaynames_variant_button" class="btn btn-secondary">{{#str}} bulk_edit_variant_displaynames, tiny_elements {{/str}}</button>
         </div>
     </div>
-    {{/showbulkedit}}
 </div>
