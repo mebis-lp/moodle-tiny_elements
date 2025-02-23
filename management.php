@@ -33,6 +33,7 @@ $PAGE->set_url($url);
 $PAGE->set_context(context_system::instance());
 $PAGE->set_heading(get_string('menuitem_elements', 'tiny_elements') . ' ' . get_string('management', 'tiny_elements'));
 $compcatactive = optional_param('compcat', '', PARAM_ALPHANUMEXT);
+$showbulkedit = optional_param('showbulkedit', false, PARAM_BOOL);
 
 require_capability('tiny/elements:manage', context_system::instance());
 
@@ -166,5 +167,6 @@ echo($OUTPUT->render_from_template('tiny_elements/management', [
     'component' => $component,
     'variant' => $variant,
     'exportlink' => $exportlink,
+    'showbulkedit' => $showbulkedit,
 ]));
 echo $OUTPUT->footer();
