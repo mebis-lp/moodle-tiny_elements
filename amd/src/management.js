@@ -141,6 +141,7 @@ function showModal(e, id, table) {
         formClass: "tiny_elements\\form\\management_" + table + "_form",
         args: {
             id: id,
+            compcat: getActiveCompcatId(),
         },
         modalConfig: {title: title},
     });
@@ -443,10 +444,33 @@ function reloadIfNew(form) {
  */
 function reload() {
     // Reload page with active compcat.
-    const compcat = document.querySelector('.compcat.active');
     const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.set('compcat', compcat.dataset.compcat);
+    currentUrl.searchParams.set('compcat', getActiveCompcatName());
     window.location.href = currentUrl.toString();
+}
+
+/**
+ * Get the current active compcat.
+ * @returns string Name of active compcat.
+ */
+function getActiveCompcatName() {
+    const compcat = document.querySelector('.compcat.active');
+    if (!compcat) {
+        return '';
+    }
+    return compcat.dataset.compcat ?? '';
+}
+
+/**
+ * Get the current active compcat.
+ * @returns int Id of active compcat.
+ */
+function getActiveCompcatId() {
+    const compcat = document.querySelector('.compcat.active');
+    if (!compcat) {
+        return 0;
+    }
+    return compcat.dataset.id ?? 0;
 }
 
 /**
@@ -455,10 +479,7 @@ function reload() {
  * @param {*} table
  * @returns {mixed}
  */
-export const duplicateItem = (
-    id,
-    table,
-) => fetchMany(
+export const duplicateItem = (id, table) => fetchMany(
     [{
         methodname: 'tiny_elements_duplicate_item',
         args: {

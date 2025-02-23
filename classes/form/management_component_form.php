@@ -54,6 +54,9 @@ class management_component_form extends base_form {
 
         $mform->addElement('select', 'compcat', get_string('compcat', 'tiny_elements'), $compcats);
         $mform->setType('compcat', PARAM_INT);
+        if (!empty($this->_ajaxformdata['compcat'])) {
+            $mform->setDefault('compcat', $this->_ajaxformdata['compcat']);
+        }
 
         $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'code', get_string('code', 'tiny_elements'));
         $mform->setType('code', PARAM_RAW);
