@@ -50,5 +50,59 @@ function xmldb_tiny_elements_upgrade($oldversion): bool {
         upgrade_plugin_savepoint(true, 2025013100, 'tiny', 'elements');
     }
 
+    if ($oldversion < 2025022402) {
+        // Define field componentname to be added to tiny_elements_comp_variant.
+        $table = new xmldb_table('tiny_elements_comp_variant');
+        $field = new xmldb_field('componentname', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'variant');
+
+        // Conditionally launch add field componentname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Move componentid to componentname.
+        $DB->execute(
+            'UPDATE {tiny_elements_comp_variant}
+            SET componentname = (SELECT name FROM {tiny_elements_component} WHERE id = component)'
+        );
+
+        // Delete all rows without componentname.
+        $DB->execute('DELETE FROM {tiny_elements_comp_variant} WHERE componentname IS NULL');
+
+        // Remove old foreign key.
+        $key = new xmldb_key(
+            'tinyelementscompvariant_comp_fk',
+            XMLDB_KEY_FOREIGN,
+            ['component'],
+            'tiny_elements_component',
+            ['id']
+        );
+
+        // Launch drop key tinyelementscompvariant_comp_fk.
+        $dbman->drop_key($table, $key);
+
+        // Add new foreign key.
+        $key = new xmldb_key(
+            'tinyelementscompvariant_comp_fk',
+            XMLDB_KEY_FOREIGN,
+            ['componentname'],
+            'tiny_elements_component',
+            ['name']
+        );
+
+        // Launch add key tinyelementscompvariant_comp_fk.
+        $dbman->add_key($table, $key);
+
+        $field = new xmldb_field('component');
+
+        // Conditionally launch drop field component.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Elements savepoint reached.
+        upgrade_plugin_savepoint(true, 2025022402, 'tiny', 'elements');
+    }
+
     return true;
 }

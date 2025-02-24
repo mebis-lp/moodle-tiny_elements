@@ -127,8 +127,8 @@ abstract class base_form extends dynamic_form {
                 $variants = $DB->get_fieldset_select(
                     'tiny_elements_comp_variant',
                     'variant',
-                    'component = ?',
-                    ['component' => $source->id]
+                    'componentname = ?',
+                    ['componentname' => $source->name]
                 );
                 $source->variants = $variants;
             }

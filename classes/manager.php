@@ -118,14 +118,9 @@ class manager {
      */
     public function delete_component(int $id): void {
         global $DB;
-        $sql = 'DELETE FROM {tiny_elements_comp_flavor}
-                WHERE componentname IN (
-                    SELECT name FROM {tiny_elements_component}
-                    WHERE id = ?
-                )';
-        $DB->execute($sql, [$id]);
-        $sql = 'DELETE FROM {tiny_elements_comp_variant} WHERE component = ?';
-        $DB->execute($sql, [$id]);
+        $componentname = $DB->get_field('tiny_elements_component', 'name', ['id' => $id]);
+        $DB->delete_records('tiny_elements_comp_flavor', ['componentname' => $componentname]);
+        $DB->delete_records('tiny_elements_comp_variant', ['componentname' => $componentname]);
         $DB->delete_records('tiny_elements_component', ['id' => $id]);
 
         // Purge CSS and JS cache.
@@ -321,7 +316,7 @@ class manager {
         if (count($data->variants) > 0) {
             foreach ($data->variants as $variant) {
                 $DB->insert_record('tiny_elements_comp_variant', [
-                    'component' => $data->id,
+                    'componentname' => $data->name,
                     'variant' => $variant,
                 ]);
             }
@@ -456,13 +451,13 @@ class manager {
         }
         // Update component variants.
         if ($oldrecord) {
-            $records = $DB->get_records('tiny_elements_comp_variant', ['component' => $oldrecord->id]);
-            $DB->delete_records('tiny_elements_comp_variant', ['component' => $oldrecord->id]);
+            $records = $DB->get_records('tiny_elements_comp_variant', ['componentname' => $oldrecord->name]);
+            $DB->delete_records('tiny_elements_comp_variant', ['componentname' => $oldrecord->name]);
         }
         if (count($data->variants) > 0) {
             foreach ($data->variants as $variant) {
                 $DB->insert_record('tiny_elements_comp_variant', [
-                    'component' => $data->id,
+                    'componentname' => $data->name,
                     'variant' => $variant,
                 ]);
             }

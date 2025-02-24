@@ -132,10 +132,10 @@ final class manager_test extends advanced_testcase {
             $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent', 'flavorname' => 'testflavor'])
         );
         $this->assertFalse(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'testcomponent', 'variant' => 'testvariant'])
         );
         $this->assertFalse(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'testcomponent', 'variant' => 'testvariant2'])
         );
 
         $this->assertTrue($DB->record_exists('tiny_elements_compcat', ['id' => $data['category2id']]));
@@ -147,7 +147,7 @@ final class manager_test extends advanced_testcase {
             $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor2'])
         );
         $this->assertTrue(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['component2id'], 'variant' => 'testvariant'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'testcomponent2', 'variant' => 'testvariant'])
         );
     }
 
@@ -221,10 +221,10 @@ final class manager_test extends advanced_testcase {
             $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent', 'flavorname' => 'testflavor'])
         );
         $this->assertFalse(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'testcomponent', 'variant' => 'testvariant'])
         );
         $this->assertFalse(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'testcomponent', 'variant' => 'testvariant2'])
         );
 
         // Verify the other component is not deleted.
@@ -236,7 +236,7 @@ final class manager_test extends advanced_testcase {
             $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent2', 'flavorname' => 'testflavor2'])
         );
         $this->assertTrue(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['component2id'], 'variant' => 'testvariant'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'testcomponent2', 'variant' => 'testvariant'])
         );
     }
 
@@ -328,10 +328,10 @@ final class manager_test extends advanced_testcase {
             $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'testcomponent', 'flavorname' => 'testflavor'])
         );
         $this->assertTrue(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'testcomponent', 'variant' => 'testvariant'])
         );
         $this->assertTrue(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'testcomponent', 'variant' => 'testvariant2'])
         );
     }
 
@@ -456,10 +456,10 @@ final class manager_test extends advanced_testcase {
             $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'changedname', 'flavorname' => 'testflavor'])
         );
         $this->assertTrue(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'changedname', 'variant' => 'testvariant'])
         );
         $this->assertFalse(
-            $DB->record_exists('tiny_elements_comp_variant', ['component' => $data['componentid'], 'variant' => 'testvariant2'])
+            $DB->record_exists('tiny_elements_comp_variant', ['componentname' => 'changedname', 'variant' => 'testvariant2'])
         );
     }
 }

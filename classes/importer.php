@@ -326,7 +326,7 @@ class importer {
                         continue;
                     }
                     $variantrecord = [
-                        'component' => $record['id'],
+                        'componentname' => $record['name'],
                         'variant' => $variant,
                     ];
                     $existing = $DB->get_record('tiny_elements_comp_variant', $variantrecord);
@@ -457,15 +457,23 @@ class importer {
     public function import_component_variant(array|object $record, array $componentmap): int {
         global $DB;
         $record = (array) $record;
-        // Do not import relations for components that are not part of the import.
-        if (!isset($componentmap[$record['component']])) {
-            return 0;
+
+        if (!array_key_exists('componentname', $record)) {
+            // Do not import relations for components that are not part of the import.
+            if (!isset($componentmap[$record['component']])) {
+                return 0;
+            }
+            $record['component'] = $componentmap[$record['component']];
+            $record['componentname'] = $DB->get_field(
+                'tiny_elements_component',
+                'name',
+                ['id' => $record['component']]
+            );
         }
-        $record['component'] = $componentmap[$record['component']];
 
         $current = $DB->get_record(
             'tiny_elements_comp_variant',
-            ['component' => $record['component'], 'variant' => $record['variant']]
+            ['componentname' => $record['componentname'], 'variant' => $record['variant']]
         );
         if (!$current) {
             if (!$this->whatif) {
@@ -476,14 +484,14 @@ class importer {
             $this->importresults[] = get_string(
                 'newcompvariant',
                 'tiny_elements',
-                $record['component'] . ' - ' . $record['variant']
+                $record['componentname'] . ' - ' . $record['variant']
             );
             return $record['id'];
         }
         $this->importresults[] = get_string(
             'replacecompvariant',
             'tiny_elements',
-            $record['component'] . ' - ' . $record['variant']
+            $record['componentname'] . ' - ' . $record['variant']
         );
         return $current->id;
     }

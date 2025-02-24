@@ -78,11 +78,14 @@ class utils {
      */
     public static function get_all_comp_variants(bool $isstudent = false): array {
         global $DB;
-        $compvariants = $DB->get_records('tiny_elements_comp_variant', null, '', 'id, component, variant');
-        // Sort all variants to the component. key: component id, value: array of variantsnames.
+        $compvariants = $DB->get_records('tiny_elements_comp_variant', null, '', 'id, componentname, variant');
+        // Sort all variants to the component. key: component name, value: array of variant names.
         $components = [];
         foreach ($compvariants as $compvariant) {
-            $components[$compvariant->component] = array_merge([$compvariant->variant], $components[$compvariant->component] ?? []);
+            $components[$compvariant->componentname] = array_merge(
+                [$compvariant->variant],
+                $components[$compvariant->componentname] ?? []
+            );
         }
         return $components;
     }
@@ -162,7 +165,7 @@ class utils {
             }
 
             // Add variants to components structure.
-            $components[$key]['variants'] = $componentvariants[$component['id']] ?? [];
+            $components[$key]['variants'] = $componentvariants[$component['name']] ?? [];
         }
 
         foreach ($flavors as $flavor) {

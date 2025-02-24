@@ -18,7 +18,8 @@
  * Tiny Elements plugin version details.
  *
  * @package     tiny_elements
- * @copyright   2022 Marc Català <reskit@gmail.com>
+ * @copyright   2025 ISB Bayern
+ * @author      Stefan Hanauska <stefan.hanauska@csg-in.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,4 +29,4 @@ $plugin->component = 'tiny_elements';
 $plugin->release = '1.0.0';
 $plugin->requires = 2024042200;
 $plugin->maturity = MATURITY_BETA;
-$plugin->version = 2025013101;
+$plugin->version = 2025022402;

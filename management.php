@@ -90,7 +90,7 @@ foreach ($variant as $key => $value) {
     $sql = "SELECT compcat
             FROM {tiny_elements_component} c
             JOIN {tiny_elements_comp_variant} cpv
-            ON c.id = cpv.component
+            ON c.name = cpv.componentname
             WHERE cpv.variant = :variant";
     $vcomps = $DB->get_fieldset_sql($sql, ['variant' => $value->name]);
     if (!empty($vcomps)) {
