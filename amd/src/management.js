@@ -137,6 +137,7 @@ function showModal(e, id, table) {
         args: {
             id: id,
             compcat: getActiveCompcatId(),
+            categoryname: getActiveCompcatName(),
         },
         modalConfig: {title: title},
     });
@@ -359,7 +360,7 @@ function showItems(e, compcat) {
     });
 
     // Show component and variants with compcat name and read the flavors.
-    let itemsShow = document.getElementsByClassName(compcat);
+    let itemsShow = document.querySelectorAll('[data-categoryname="' + compcat + '"]');
     let usedFlavors = [];
     itemsShow.forEach(element => {
         element.classList.remove('hidden');

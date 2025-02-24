@@ -55,12 +55,21 @@ class manager {
     public function delete_compcat(int $id): void {
         global $DB;
         $fs = get_file_storage();
+        $categoryname = $DB->get_field('tiny_elements_compcat', 'name', ['id' => $id]);
         $fs->delete_area_files($this->contextid, 'tiny_elements', 'images', $id);
         $DB->delete_records('tiny_elements_compcat', ['id' => $id]);
-        foreach ($DB->get_records('tiny_elements_component', ['compcat' => $id]) as $component) {
+
+        foreach ($DB->get_records('tiny_elements_component', ['categoryname' => $categoryname]) as $component) {
             $this->delete_component($component->id);
         }
-        // Todo: Delete all flavors and variants that were only used by this category.
+
+        foreach ($DB->get_records('tiny_elements_flavor', ['categoryname' => $categoryname]) as $flavor) {
+            $this->delete_flavor($flavor->id);
+        }
+
+        foreach ($DB->get_records('tiny_elements_variant', ['categoryname' => $categoryname]) as $variant) {
+            $this->delete_variant($variant->id);
+        }
 
         // Purge CSS and JS cache.
         \tiny_elements\local\utils::purge_css_cache();
@@ -350,7 +359,30 @@ class manager {
             \tiny_elements\local\utils::rebuild_css_cache();
         }
 
-        return $DB->update_record(constants::TABLES['compcat'], $data);
+        $result = $DB->update_record(constants::TABLES['compcat'], $data);
+
+        $result &= $DB->execute(
+            'UPDATE {tiny_elements_component}
+             SET categoryname = ?
+             WHERE categoryname = ?',
+            [$data->name, $oldrecord->name]
+        );
+
+        $result &= $DB->execute(
+            'UPDATE {tiny_elements_flavor}
+             SET categoryname = ?
+             WHERE categoryname = ?',
+            [$data->name, $oldrecord->name]
+        );
+
+        $result &= $DB->execute(
+            'UPDATE {tiny_elements_variant}
+             SET categoryname = ?
+             WHERE categoryname = ?',
+            [$data->name, $oldrecord->name]
+        );
+
+        return $result;
     }
 
     /**
@@ -476,5 +508,61 @@ class manager {
         }
 
         return $result;
+    }
+
+    /**
+     * Get the name of the category for a variant. If there are multiple categories where the variant is used,
+     * get the one with the most components.
+     *
+     * @param string $variantname
+     * @return string
+     */
+    public function get_compcatname_for_variant(string $variantname): string {
+        global $DB;
+        $compcatname = '';
+        $compcat = $DB->get_record_sql(
+            'SELECT c.name, COUNT(c.id) AS cnt
+             FROM {tiny_elements_compcat} c
+             JOIN {tiny_elements_component} cp
+             ON c.id = cp.compcat
+             JOIN {tiny_elements_comp_variant} cpv
+             ON cp.name = cpv.componentname
+             WHERE cpv.variant = ?
+             ORDER BY cnt DESC',
+            [$variantname],
+            IGNORE_MULTIPLE
+        );
+        if ($compcat) {
+            $compcatname = $compcat->name;
+        }
+        return $compcatname ?? '';
+    }
+
+    /**
+     * Get the name of the category for a flavor. If there are multiple categories where the flavor is used,
+     * get the one with the most components.
+     *
+     * @param string $flavorname
+     * @return string
+     */
+    public function get_compcatname_for_flavor(string $flavorname): string {
+        global $DB;
+        $compcatname = '';
+        $compcat = $DB->get_record_sql(
+            'SELECT c.name, COUNT(c.id) AS cnt
+             FROM {tiny_elements_compcat} c
+             JOIN {tiny_elements_component} cp
+             ON c.id = cp.compcat
+             JOIN {tiny_elements_comp_flavor} cpf
+             ON cp.name = cpf.componentname
+             WHERE cpf.flavorname = ?
+             ORDER BY cnt DESC',
+            [$flavorname],
+            IGNORE_MULTIPLE
+        );
+        if ($compcat) {
+            $compcatname = $compcat->name;
+        }
+        return $compcatname ?? '';
     }
 }

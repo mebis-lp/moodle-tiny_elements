@@ -117,8 +117,6 @@ class exporter {
      * @return string
      */
     public function exportxml(int $compcatid = 0): string {
-        global $DB;
-
         // Start.
         $xmloutput = new memory_xml_output();
         $xmlwriter = new xml_writer($xmloutput);
@@ -127,7 +125,7 @@ class exporter {
 
         $result = $this->export_categories_and_components($xmlwriter, $compcatid);
 
-        $this->export_flavors_and_variants($xmlwriter, $compcatid, $result['componentids'], $result['componentnames']);
+        $this->export_flavors_and_variants($xmlwriter, $compcatid, $result['componentnames']);
 
         // End.
         $xmlwriter->end_tag('elements');
@@ -144,18 +142,18 @@ class exporter {
      * Export categories.
      *
      * @param xml_writer $xmlwriter
-     * @param int $compcatid
+     * @param string $categoryname
      * @return array
      */
-    public function export_categories_and_components(xml_writer $xmlwriter, int $compcatid = 0): array {
+    public function export_categories_and_components(xml_writer $xmlwriter, string $categoryname): array {
         global $DB;
 
         $conditionscategories = [];
         $conditionscomponents = [];
 
-        if (!empty($compcatid)) {
-            $conditionscategories['id'] = $compcatid;
-            $conditionscomponents['compcat'] = $compcatid;
+        if (!empty($categoryname)) {
+            $conditionscategories['name'] = $categoryname;
+            $conditionscomponents['categoryname'] = $categoryname;
         }
 
         $compcats = $DB->get_records(constants::TABLES['compcat'], $conditionscategories);
@@ -165,7 +163,6 @@ class exporter {
         $this->write_elements($xmlwriter, constants::TABLES['component'], $components);
 
         return [
-            'componentids' => array_keys($components),
             'componentnames' => array_column($components, 'name'),
         ];
     }
@@ -174,14 +171,12 @@ class exporter {
      * Export flavors and variants.
      *
      * @param xml_writer $xmlwriter
-     * @param int $compcatid
-     * @param array $componentids
+     * @param string $categoryname
      * @param array $componentnames
      */
     public function export_flavors_and_variants(
         xml_writer $xmlwriter,
-        int $compcatid = 0,
-        array $componentids = [],
+        string $categoryname = '',
         array $componentnames = []
     ): void {
         global $DB;
@@ -189,7 +184,7 @@ class exporter {
         $sql = ' = componentname';
         $params = [];
 
-        if (!empty($compcatid)) {
+        if (!empty($categoryname)) {
             [$sql, $params] = $DB->get_in_or_equal($componentnames, SQL_PARAMS_QM, 'param', true, '');
         }
         $compflavors = $DB->get_records_sql(
@@ -200,18 +195,18 @@ class exporter {
         $flavornames = array_unique(array_column($compflavors, 'flavor'));
 
         $sql = ' = name';
-        if (!empty($compcatid)) {
+        if (!empty($categoryname)) {
             [$sql, $params] = $DB->get_in_or_equal($flavornames, SQL_PARAMS_QM, 'param', true, '');
         }
         $flavors = $DB->get_records_sql('SELECT * FROM {' . constants::TABLES['flavor'] . '} WHERE name ' . $sql, $params);
         $this->write_elements($xmlwriter, constants::TABLES['flavor'], $flavors);
 
-        $sql = ' = component';
-        if (!empty($compcatid)) {
-            [$sql, $params] = $DB->get_in_or_equal($componentids, SQL_PARAMS_QM, 'param', true, '0');
+        $sql = ' = componentname';
+        if (!empty($categoryname)) {
+            [$sql, $params] = $DB->get_in_or_equal($componentnames, SQL_PARAMS_QM, 'param', true, '0');
         }
         $compvariants = $DB->get_records_sql(
-            'SELECT * FROM {' . constants::TABLES['compvariant'] . '} WHERE component ' . $sql,
+            'SELECT * FROM {' . constants::TABLES['compvariant'] . '} WHERE componentname ' . $sql,
             $params
         );
         $this->write_elements($xmlwriter, constants::TABLES['compvariant'], $compvariants);

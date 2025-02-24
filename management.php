@@ -53,55 +53,7 @@ $flavor = array_values($dbflavor);
 $component = array_values($dbcomponent);
 $variant = array_values($dbvariant);
 
-// Check if there items without valid component.
-// Also already begin formatting as selectors.
-$sqlflavor = "SELECT CONCAT('.', f.name, '.flavor') FROM {tiny_elements_flavor} f
-              LEFT JOIN {tiny_elements_comp_flavor} cf ON f.name = cf.flavorname
-              LEFT JOIN {tiny_elements_component} c ON cf.componentname = c.name
-              WHERE cf.id IS NULL OR c.id IS NULL";
-$loneflavors = $DB->get_fieldset_sql($sqlflavor);
-$sqlvariant = "SELECT CONCAT('.', v.name, '.variant')
-                FROM {tiny_elements_variant} v
-                LEFT JOIN {tiny_elements_comp_variant} cpv
-                ON v.name = cpv.variant
-                WHERE cpv.id IS NULL";
-$lonevariants = $DB->get_fieldset_sql($sqlvariant);
-$sqlcomponent = "SELECT CONCAT('.', c.name, '.component') FROM {tiny_elements_component} c
-              LEFT JOIN {tiny_elements_compcat} cc ON c.compcat = cc.id
-              WHERE cc.id IS NULL";
-$lonecomponents = $DB->get_fieldset_sql($sqlcomponent);
-// Add a compcat to make these accessible.
-if ($loneflavors || $lonevariants || $lonecomponents) {
-    $foundcompcat = [
-        'id' => 'false',
-        'name' => 'found-items',
-        'displayname' => get_string('foundcompcat', 'tiny_elements'),
-        'loneflavors' => implode(',', $loneflavors),
-        'lonevariants' => implode(',', $lonevariants),
-        'lonecomponents' => implode(',', $lonecomponents),
-    ];
-    array_unshift($compcats, $foundcompcat);
-}
-
-// Add matching compcats to variants.
-foreach ($variant as $key => $value) {
-    $vcompcats = [];
-    // Select the matching compcats.
-    $sql = "SELECT compcat
-            FROM {tiny_elements_component} c
-            JOIN {tiny_elements_comp_variant} cpv
-            ON c.name = cpv.componentname
-            WHERE cpv.variant = :variant";
-    $vcomps = $DB->get_fieldset_sql($sql, ['variant' => $value->name]);
-    if (!empty($vcomps)) {
-        $vcomps = array_unique($vcomps);
-        // Extract names and write as classes.
-        [$insql, $inparams] = $DB->get_in_or_equal($vcomps);
-        $vcompcats = $DB->get_fieldset_select('tiny_elements_compcat', 'name', "id $insql", $inparams);
-        $variant[$key]->compcatmatches = implode(' ', $vcompcats);
-    }
-}
-// Build component preview images for management, also add compcat.
+// Build component preview images for management.
 foreach ($component as $key => $value) {
     // Add corresponding flavors.
     $flavorsarr = [];
@@ -124,8 +76,6 @@ foreach ($component as $key => $value) {
     if (count($component[$key]->flavorexamplesarr) > 2) {
         $component[$key]->flavorexamplesarr = array_slice($component[$key]->flavorexamplesarr, 0, 2);
     }
-    // Add the compcat name as js selector.
-    $component[$key]->compcatname = $dbcompcats[$value->compcat]->name;
 }
 
 // Add flavor previews.

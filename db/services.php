@@ -49,4 +49,18 @@ $functions = [
                 'ajax'          => true,
                 'capabilities'  => 'tiny/elements:manage',
         ],
+        'tiny_elements_get_variants' => [
+                'classname' => 'tiny_elements\external\get_variants',
+                'description' => 'Retrieve variants data',
+                'type' => 'read',
+                'ajax' => true,
+                'capabilities' => 'tiny/elements:manage',
+        ],
+        'tiny_elements_get_flavors' => [
+                'classname' => 'tiny_elements\external\get_flavors',
+                'description' => 'Retrieve flavors data',
+                'type' => 'read',
+                'ajax' => true,
+                'capabilities' => 'tiny/elements:manage',
+        ],
 ];

@@ -76,6 +76,7 @@
             <div 
                 class="col mb-4 item compcat {{^id}}addcontainer{{/id}}" data-compcat="{{name}}" data-id="{{id}}"
                 data-loneflavors="{{loneflavors}}" data-lonevariants="{{lonevariants}}" data-lonecomponents="{{lonecomponents}}"
+                data-categoryname="{{categoryname}}"
             >
                 <div class="card h-100">
                     <div class="card-body">
@@ -108,7 +109,7 @@
     <h2>{{#str}} flavors, tiny_elements {{/str}}</h2>
     <div class="row row-cols-12">
         {{#flavor}}
-            <div class="col mb-4 item flavor {{name}} {{#id}}hidden{{/id}}{{^id}}addcontainer{{/id}}">
+            <div class="col mb-4 item flavor {{name}} {{#id}}hidden{{/id}}{{^id}}addcontainer{{/id}}" data-categoryname="{{categoryname}}">
                 <div class="card h-100">
                 <div class="card-body">
                     {{#id}}
@@ -153,7 +154,7 @@
 
     <div class="row row-cols-12">
         {{#component}}
-            <div class="col mb-4 item component {{compcatname}} {{#id}}hidden{{/id}}{{^id}}addcontainer{{/id}}" data-flavors="{{#flavorsarr}}{{.}} {{/flavorsarr}}">
+            <div class="col mb-4 item component {{#id}}hidden{{/id}}{{^id}}addcontainer{{/id}}" data-flavors="{{#flavorsarr}}{{.}} {{/flavorsarr}}" data-categoryname="{{categoryname}}">
                 <div class="card h-100">
                 <div class="card-body">
                     {{#id}}
@@ -204,7 +205,7 @@
     <div class="row row-cols-12">
         {{#variant}}
             <div 
-                class="col mb-4 item variant {{name}} {{compcatmatches}} {{#id}}hidden{{/id}}{{^id}}addcontainer{{/id}}">
+                class="col mb-4 item variant {{name}} {{#id}}hidden{{/id}}{{^id}}addcontainer{{/id}}" data-categoryname="{{categoryname}}">
                 <div class="card h-100">
                 <div class="card-body">
                     {{#id}}

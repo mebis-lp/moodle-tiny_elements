@@ -66,7 +66,7 @@ class get_elements_data extends external_api {
     /**
      * Describes the return structure of the service.
      *
-     * @return external_multiple_structure the return structure
+     * @return external_single_structure the return structure
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
@@ -83,7 +83,7 @@ class get_elements_data extends external_api {
                     'id' => new external_value(PARAM_INT, 'the id of the component'),
                     'name' => new external_value(PARAM_TEXT, 'the name of the component'),
                     'displayname' => new external_value(PARAM_TEXT, 'the display name of the component'),
-                    'compcat' => new external_value(PARAM_INT, 'the id of the component category'),
+                    'categoryname' => new external_value(PARAM_TEXT, 'the name of the component category'),
                     'code' => new external_value(PARAM_RAW, 'the code'),
                     'text' => new external_value(PARAM_TEXT, 'the text'),
                     'variants' => new external_multiple_structure(new external_value(PARAM_TEXT, 'the variants')),
@@ -96,6 +96,7 @@ class get_elements_data extends external_api {
                     'id' => new external_value(PARAM_INT, 'the id of the flavor'),
                     'name' => new external_value(PARAM_TEXT, 'the name of the flavor'),
                     'displayname' => new external_value(PARAM_TEXT, 'the display name of the flavor'),
+                    'categoryname' => new external_value(PARAM_TEXT, 'the name of the component category'),
                     'displayorder' => new external_value(PARAM_INT, 'the display order of the flavor'),
                     'content' => new external_value(PARAM_RAW, 'the content'),
                     'categories' => new external_value(PARAM_TEXT, 'the categories'),
@@ -106,6 +107,7 @@ class get_elements_data extends external_api {
                     'id' => new external_value(PARAM_INT, 'the id of the variant'),
                     'name' => new external_value(PARAM_TEXT, 'the name of the variant'),
                     'displayname' => new external_value(PARAM_TEXT, 'the display name of the variant'),
+                    'categoryname' => new external_value(PARAM_TEXT, 'the name of the component category'),
                     'content' => new external_value(PARAM_RAW, 'the content'),
                     'c4lcompatibility' => new external_value(PARAM_BOOL, 'c4l compatibility'),
                 ], 'a component variant')

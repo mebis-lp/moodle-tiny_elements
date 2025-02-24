@@ -104,5 +104,84 @@ function xmldb_tiny_elements_upgrade($oldversion): bool {
         upgrade_plugin_savepoint(true, 2025022402, 'tiny', 'elements');
     }
 
+    if ($oldversion < 2025022409) {
+        // Define field categoryname to be added to tiny_elements_variant.
+        $table = new xmldb_table('tiny_elements_variant');
+        $field = new xmldb_field('categoryname', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'displayname');
+
+        // Conditionally launch add field categoryname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $manager = new tiny_elements\manager();
+        $variants = $DB->get_records('tiny_elements_variant');
+        foreach ($variants as $variant) {
+            $compcatname = $manager->get_compcatname_for_variant($variant->name);
+            $DB->set_field('tiny_elements_variant', 'categoryname', $compcatname, ['id' => $variant->id]);
+        }
+
+        $key = new xmldb_key('tinyelementsvari_comp_fk', XMLDB_KEY_FOREIGN, ['categoryname'], 'tiny_elements_compcat', ['name']);
+
+        // Launch add key tinyelementsvari_comp_fk.
+        $dbman->add_key($table, $key);
+
+        // Define field categoryname to be added to tiny_elements_glavor.
+        $table = new xmldb_table('tiny_elements_flavor');
+        $field = new xmldb_field('categoryname', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'displayname');
+
+        // Conditionally launch add field categoryname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $manager = new tiny_elements\manager();
+        $flavors = $DB->get_records('tiny_elements_flavor');
+        foreach ($flavors as $flavor) {
+            $compcatname = $manager->get_compcatname_for_flavor($flavor->name);
+            $DB->set_field('tiny_elements_flavor', 'categoryname', $compcatname, ['id' => $flavor->id]);
+        }
+
+        $key = new xmldb_key('tinyelementsflav_comp_fk', XMLDB_KEY_FOREIGN, ['categoryname'], 'tiny_elements_compcat', ['name']);
+
+        // Launch add key tinyelementsflav_comp_fk.
+        $dbman->add_key($table, $key);
+
+        // Define field categoryname to be added to tiny_elements_component.
+        $table = new xmldb_table('tiny_elements_component');
+        $field = new xmldb_field('categoryname', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'compcat');
+
+        // Conditionally launch add field categoryname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $DB->execute(
+            'UPDATE {tiny_elements_component}
+            SET categoryname = (SELECT name FROM {tiny_elements_compcat} WHERE id = compcat)'
+        );
+
+        $key = new xmldb_key('compcat', XMLDB_KEY_FOREIGN, ['compcat'], 'tiny_elements_compcat', ['id']);
+
+        // Launch drop key compcat.
+        $dbman->drop_key($table, $key);
+
+        $field = new xmldb_field('compcat');
+
+        // Conditionally launch drop field compcat.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Define key tinyelementscomp_comp_fk (foreign) to be added to tiny_elements_component.
+        $key = new xmldb_key('tinyelementscomp_comp_fk', XMLDB_KEY_FOREIGN, ['categoryname'], 'tiny_elements_compcat', ['name']);
+
+        // Launch add key tinyelementscomp_comp_fk.
+        $dbman->add_key($table, $key);
+
+        // Elements savepoint reached.
+        upgrade_plugin_savepoint(true, 2025022409, 'tiny', 'elements');
+    }
+
     return true;
 }

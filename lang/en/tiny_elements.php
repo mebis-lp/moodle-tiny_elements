@@ -33,6 +33,7 @@ $string['button_elements'] = 'Elements';
 $string['c4lcompatibility'] = 'If checked, the variant class name will be c4l-...-variant instead of elements-...-variant for compatibility with the original c4l components.';
 $string['c4lcompatibility_help'] = 'c4l (components for learning) is the plugin elements is based on.';
 $string['cachedef_tiny_elements_css'] = 'Cache for tiny_elements CSS';
+$string['category'] = 'Category';
 $string['close'] = 'Close';
 $string['code'] = 'Code';
 $string['code_help'] = 'HTML code to insert. You can use {{VARIANTS}}, {{FLAVOR}} and {{PLACEHOLDER}} as placeholders for variants, flavors and text to be inserted.';

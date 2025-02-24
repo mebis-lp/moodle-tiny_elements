@@ -30,7 +30,7 @@ class management_component_form extends base_form {
     public function definition() {
         global $DB;
 
-        $compcats = $DB->get_records_menu('tiny_elements_compcat', null, 'displayname', 'id, displayname');
+        $compcats = $DB->get_records_menu('tiny_elements_compcat', null, 'displayname', 'name, displayname');
         $flavors = $DB->get_records_menu('tiny_elements_flavor', null, 'displayname', 'name, displayname');
         $variants = $DB->get_records_menu('tiny_elements_variant', null, 'displayname', 'name, displayname');
 
@@ -52,10 +52,10 @@ class management_component_form extends base_form {
         $mform->setType('displayname', PARAM_TEXT);
         $mform->addHelpButton('displayname', 'displayname', 'tiny_elements');
 
-        $mform->addElement('select', 'compcat', get_string('compcat', 'tiny_elements'), $compcats);
-        $mform->setType('compcat', PARAM_INT);
-        if (!empty($this->_ajaxformdata['compcat'])) {
-            $mform->setDefault('compcat', $this->_ajaxformdata['compcat']);
+        $mform->addElement('select', 'categoryname', get_string('compcat', 'tiny_elements'), $compcats);
+        $mform->setType('categoryname', PARAM_INT);
+        if (!empty($this->_ajaxformdata['categoryname'])) {
+            $mform->setDefault('categoryname', $this->_ajaxformdata['categoryname']);
         }
 
         $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'code', get_string('code', 'tiny_elements'));
@@ -65,10 +65,22 @@ class management_component_form extends base_form {
         $mform->addElement('textarea', 'text', get_string('text', 'tiny_elements'));
         $mform->setType('text', PARAM_TEXT);
 
-        $mform->addElement('autocomplete', 'variants', get_string('variants', 'tiny_elements'), $variants, ['multiple' => true]);
+        $mform->addElement(
+            'autocomplete',
+            'variants',
+            get_string('variants', 'tiny_elements'),
+            $variants,
+            ['multiple' => true, 'ajax' => 'tiny_elements/category_form_helper']
+        );
         $mform->setType('variants', PARAM_TEXT);
 
-        $mform->addElement('autocomplete', 'flavors', get_string('flavors', 'tiny_elements'), $flavors, ['multiple' => true]);
+        $mform->addElement(
+            'autocomplete',
+            'flavors',
+            get_string('flavors', 'tiny_elements'),
+            $flavors,
+            ['multiple' => true, 'ajax' => 'tiny_elements/category_form_helper']
+        );
         $mform->setType('flavors', PARAM_TEXT);
 
         $mform->addElement('text', 'displayorder', get_string('displayorder', 'tiny_elements'));

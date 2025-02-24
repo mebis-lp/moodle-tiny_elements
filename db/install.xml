@@ -7,7 +7,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="displayname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="compcat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="categoryname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="code" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="text" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="displayorder" TYPE="int" LENGTH="4" NOTNULL="false" SEQUENCE="false"/>
@@ -20,8 +20,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="compcat" TYPE="foreign" FIELDS="compcat" REFTABLE="tiny_elements_compcat" REFFIELDS="id"/>
         <KEY NAME="name" TYPE="unique" FIELDS="name"/>
+        <KEY NAME="tinyelementscomp_comp_fk" TYPE="foreign" FIELDS="categoryname" REFTABLE="tiny_elements_compcat" REFFIELDS="name"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="tiny_elements_compcat" COMMENT="Stores the categories">
@@ -44,6 +44,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="displayname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="categoryname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="content" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="css" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="iconurl" TYPE="char" LENGTH="1333" NOTNULL="false" SEQUENCE="false"/>
@@ -54,6 +55,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="name" TYPE="unique" FIELDS="name"/>
+        <KEY NAME="tinyelementsvari_comp_fk" TYPE="foreign" FIELDS="categoryname" REFTABLE="tiny_elements_compcat" REFFIELDS="name"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="tiny_elements_flavor" COMMENT="Stores the flavors">
@@ -61,6 +63,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="displayname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="categoryname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="displayorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="content" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="css" TYPE="text" NOTNULL="false" SEQUENCE="false"/>

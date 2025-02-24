@@ -70,10 +70,10 @@ export default class Data {
         return findById(this.components, id);
     }
 
-    getCategoryFlavors(categoryId) {
+    getCategoryFlavors(categoryname) {
         const categoryFlavors = [];
         this.flavors.forEach(flavor => {
-            if (flavor.categories == categoryId || flavor.categories.split(',').includes(categoryId)) {
+            if (flavor.categoryname == categoryname) {
                 categoryFlavors.push({
                     id: flavor.id,
                     name: flavor.name,
@@ -94,12 +94,13 @@ export default class Data {
         const cats = [];
         // Iterate over contexts.
         this.categories.forEach((category) => {
-            let categoryFlavors = this.getCategoryFlavors(category.id);
+            let categoryFlavors = this.getCategoryFlavors(category.name);
             categoryFlavors.sort((a, b) => a.displayorder - b.displayorder);
             let hasFlavors = Array.isArray(categoryFlavors) && categoryFlavors.length;
             cats.push({
                 categoryid: category.id,
                 name: category.displayname,
+                categoryname: category.name,
                 type: category.id,
                 displayorder: category.displayorder,
                 flavors: categoryFlavors,
@@ -162,12 +163,12 @@ export default class Data {
             buttons.push({
                 id: component.id,
                 name: component.displayname,
-                type: component.compcat,
+                type: component.categoryname,
                 imageClass: 'elements-' + component.name + '-icon',
                 htmlcode: component.code,
                 variants: this.getComponentVariants(component),
                 flavorlist: component.flavors.join(','),
-                category: component.compcat,
+                category: component.categoryname,
                 displayorder: component.displayorder,
             });
         });

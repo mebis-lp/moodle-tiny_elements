@@ -49,6 +49,7 @@ import Data from './data';
 let currentFlavor = '';
 let currentFlavorId = 0;
 let currentCategoryId = 1;
+let currentCategoryName = '';
 let lastFlavor = [];
 let sel = '';
 let data = {};
@@ -158,7 +159,8 @@ const displayDialogue = async(editor) => {
 
     // Select first or saved category.
     if (soleCategories.length > 0 || selectCategories.length > 0) {
-        let savedCategory = currentCategoryId;
+        const savedCategory = currentCategoryId;
+        const savedFlavor = lastFlavor[currentCategoryId];
         if (soleCategories.length == 0 || soleCategories[0].displayorder > selectCategories[0].displayorder) {
             selectCategories[0].click();
         } else {
@@ -175,6 +177,14 @@ const displayDialogue = async(editor) => {
                     node.click();
                 }
             });
+            if (savedFlavor) {
+                const flavorlink = modal.getRoot()[0].querySelector(
+                    '.elements-category-flavor[data-id="' + savedFlavor + '"]'
+                );
+                if (flavorlink) {
+                    flavorlink.click();
+                }
+            }
         }
     }
 };
@@ -188,6 +198,7 @@ const displayDialogue = async(editor) => {
 const handleCategoryClick = (event, modal) => {
     const link = event.target;
     currentCategoryId = link.dataset.categoryid;
+    currentCategoryName = link.dataset.categoryname;
 
     // Remove active from all and set to selected.
     const links = modal.getRoot()[0].querySelectorAll('.nav-link, .dropdown-item');
@@ -195,7 +206,7 @@ const handleCategoryClick = (event, modal) => {
     link.classList.add('active');
 
     // Show/hide component buttons.
-    showCategoryButtons(modal, currentCategoryId);
+    showCategoryButtons(modal, currentCategoryName);
 };
 
 /**
@@ -209,6 +220,7 @@ const handleCategoryFlavorClick = (event, modal) => {
     currentFlavor = link.dataset.flavor;
     currentFlavorId = link.dataset.id;
     currentCategoryId = link.dataset.categoryid;
+    currentCategoryName = link.dataset.categoryname;
     lastFlavor[currentCategoryId] = currentFlavorId;
 
     // Remove active from all and set to selected.
@@ -228,7 +240,7 @@ const handleCategoryFlavorClick = (event, modal) => {
         componentButton.dataset.flavor = currentFlavor;
         if (
             (componentButton.dataset.flavorlist == '' || componentButton.dataset.flavorlist.split(',').includes(currentFlavor)) &&
-            componentButton.dataset.category == currentCategoryId
+            componentButton.dataset.category == currentCategoryName
         ) {
             componentButton.classList.remove('elements-hidden');
             if (componentButton.dataset.flavorlist != '') {
@@ -254,6 +266,7 @@ const handleCategoryFlavorClick = (event, modal) => {
 const handleCategoryRemember = (event, modal) => {
     const link = event.target;
     currentCategoryId = link.dataset.categoryid;
+    currentCategoryName = link.dataset.categoryname;
     currentFlavorId = lastFlavor[currentCategoryId];
 
     if (currentFlavorId != undefined) {

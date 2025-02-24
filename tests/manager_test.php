@@ -87,7 +87,7 @@ final class manager_test extends advanced_testcase {
             'iconurl' => '',
             'flavors' => ['testflavor'],
             'variants' => ['testvariant', 'testvariant2'],
-            'compcat' => $categoryid,
+            'categoryname' => 'test',
         ]);
         $component2id = $manager->add_component((object)[
             'name' => 'testcomponent2',
@@ -97,8 +97,9 @@ final class manager_test extends advanced_testcase {
             'iconurl' => '',
             'flavors' => ['testflavor', 'testflavor2'],
             'variants' => ['testvariant'],
-            'compcat' => $category2id,
+            'categoryname' => 'test2',
         ]);
+
         return [
             'categoryid' => $categoryid,
             'category2id' => $category2id,
@@ -442,13 +443,13 @@ final class manager_test extends advanced_testcase {
             'iconurl' => '',
             'flavors' => ['testflavor2'],
             'variants' => ['testvariant'],
-            'compcat' => $data['category2id'],
+            'categoryname' => 'testcategory2',
         ]);
 
         $component = $DB->get_record('tiny_elements_component', ['id' => $data['componentid']]);
         $this->assertEquals('changedname', $component->name);
         $this->assertEquals('changeddisplayname', $component->displayname);
-        $this->assertEquals($data['category2id'], $component->compcat);
+        $this->assertEquals('testcategory2', $component->categoryname);
         $this->assertTrue(
             $DB->record_exists('tiny_elements_comp_flavor', ['componentname' => 'changedname', 'flavorname' => 'testflavor2'])
         );

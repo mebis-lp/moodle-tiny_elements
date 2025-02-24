@@ -276,6 +276,7 @@ class importer {
         $record = (array) $record;
         if (isset($categorymap[$record['compcat']])) {
             $record['compcat'] = $categorymap[$record['compcat']];
+            $record['categoryname'] = $DB->get_field('tiny_elements_compcat', 'name', ['id' => $record['compcat']]);
         }
 
         $record['css'] = utils::update_pluginfile_tags_bulk($categorymap, $record['css'] ?? '');

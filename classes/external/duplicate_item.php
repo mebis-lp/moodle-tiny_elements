@@ -53,7 +53,6 @@ class duplicate_item extends external_api {
      * @throws dml_exception
      */
     public static function execute(int $id, string $table): array {
-        global $DB;
         self::validate_parameters(self::execute_parameters(), [
             'id' => $id,
             'table' => $table,

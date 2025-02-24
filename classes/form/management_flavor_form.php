@@ -28,6 +28,7 @@ class management_flavor_form extends base_form {
      * Form definition.
      */
     public function definition() {
+        global $DB;
         $mform =& $this->_form;
 
         // Set this variable to access correct db table.
@@ -43,6 +44,13 @@ class management_flavor_form extends base_form {
 
         $mform->addElement('text', 'displayname', get_string('displayname', 'tiny_elements'), ['size' => '255']);
         $mform->setType('displayname', PARAM_TEXT);
+
+        $compcats = $DB->get_records_menu('tiny_elements_compcat', null, 'displayname', 'name, displayname');
+        $mform->addElement('select', 'categoryname', get_string('category', 'tiny_elements'), $compcats);
+        $mform->setType('categoryname', PARAM_INT);
+        if (!empty($this->_ajaxformdata['categoryname'])) {
+            $mform->setDefault('categoryname', $this->_ajaxformdata['categoryname']);
+        }
 
         $mform->addElement('text', 'displayorder', get_string('displayorder', 'tiny_elements'), ['size' => '3']);
         $mform->setType('displayorder', PARAM_INT);

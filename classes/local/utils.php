@@ -46,7 +46,7 @@ class utils {
                     'id' => $record->id,
                     'name' => $record->name,
                     'displayname' => $record->displayname,
-                    'compcat' => $record->compcat,
+                    'categoryname' => $record->categoryname,
                     'code' => self::replace_pluginfile_urls($record->code, true),
                     'text' => $record->text,
                     'displayorder' => $record->displayorder,
@@ -59,11 +59,33 @@ class utils {
     /**
      * Get all variants.
      * @param bool $isstudent
+     * @param string $categoryname
+     * @param string $query
      * @return array all variants
      */
-    public static function get_all_variants(bool $isstudent = false): array {
+    public static function get_all_variants(bool $isstudent = false, string $categoryname = '', string $query = ''): array {
         global $DB;
-        $variants = $DB->get_records('tiny_elements_variant');
+        $where = '';
+        $params = [];
+        if (!empty($categoryname)) {
+            if (!empty((int)$categoryname)) {
+                $categoryname = $DB->get_field('tiny_elements_compcat', 'name', ['id' => $categoryname]);
+            }
+            $where .= 'categoryname = :categoryname';
+            $params['categoryname'] = $categoryname;
+        }
+        if (!empty($query)) {
+            $sql = $DB->sql_like('name', ':query', false, false);
+            if (!empty($where)) {
+                $where .= ' AND ';
+            }
+            $where .= $sql;
+            $params['query'] = '%' . $DB->sql_like_escape($query) . '%';
+        }
+        $variants = $DB->get_records_sql(
+            'SELECT * FROM {tiny_elements_variant}' . (!empty($where) ? ' WHERE ' . $where : ''),
+            $params
+        );
         foreach ($variants as $variant) {
             $variant->content = self::replace_pluginfile_urls($variant->content, true);
         }
@@ -78,7 +100,7 @@ class utils {
      */
     public static function get_all_comp_variants(bool $isstudent = false): array {
         global $DB;
-        $compvariants = $DB->get_records('tiny_elements_comp_variant', null, '', 'id, componentname, variant');
+        $compvariants = $DB->get_records('tiny_elements_comp_variant', null, '');
         // Sort all variants to the component. key: component name, value: array of variant names.
         $components = [];
         foreach ($compvariants as $compvariant) {
@@ -108,7 +130,7 @@ class utils {
      */
     public static function get_all_comp_flavors(bool $isstudent = false): array {
         global $DB;
-        $compflavors = $DB->get_records('tiny_elements_comp_flavor', [], '', 'id, componentname, flavorname');
+        $compflavors = $DB->get_records('tiny_elements_comp_flavor', [], '');
         $components = [];
         foreach ($compflavors as $compflavor) {
             $components[$compflavor->componentname] = array_merge(
@@ -122,15 +144,44 @@ class utils {
     /**
      * Get all flavors.
      * @param bool $isstudent
+     * @param string $categoryname
+     * @param string $query
      * @return array all flavors
      */
-    public static function get_all_flavors(bool $isstudent = false): array {
+    public static function get_all_flavors(bool $isstudent = false, string $categoryname = '', string $query = ''): array {
         global $DB;
-        $conditions = [];
+        $where = '';
+        $params = [];
         if ($isstudent) {
-            $conditions['hideforstudents'] = 0;
+            $where .= 'hideforstudents = 0';
         }
-        $flavors = $DB->get_records('tiny_elements_flavor', $conditions, 'displayorder');
+        if (!empty($categoryname)) {
+            if (!empty((int)$categoryname)) {
+                $categoryname = $DB->get_field('tiny_elements_compcat', 'name', ['id' => $categoryname]);
+            }
+            if (!empty($where)) {
+                $where .= ' AND ';
+            }
+            $where .= 'categoryname = :categoryname';
+            $params['categoryname'] = $categoryname;
+        }
+        if (!empty($query)) {
+            $sql = $DB->sql_like('name', ':query', false, false);
+            if (!empty($where)) {
+                $where .= ' AND ';
+            }
+            $where .= $sql;
+            $params['query'] = '%' . $DB->sql_like_escape($query) . '%';
+        }
+        $flavors = $DB->get_records_sql(
+            '
+            SELECT *
+            FROM {tiny_elements_flavor}' .
+            (!empty($where) ? ' WHERE ' . $where : '') .
+            ' ORDER BY displayorder',
+            $params
+        );
+
         $flavorsbyname = [];
         foreach ($flavors as $flavor) {
             $flavorsbyname[$flavor->name] = $flavor;
