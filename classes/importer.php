@@ -313,7 +313,10 @@ class importer {
                         'componentname' => $record['name'],
                         'flavorname' => $flavor,
                     ];
-                    $DB->insert_record('tiny_elements_comp_flavor', $flavorrecord);
+                    $existing = $DB->get_record('tiny_elements_comp_flavor', $flavorrecord);
+                    if (!$existing) {
+                        $DB->insert_record('tiny_elements_comp_flavor', $flavorrecord);
+                    }
                 }
             }
 
@@ -326,7 +329,10 @@ class importer {
                         'component' => $record['id'],
                         'variant' => $variant,
                     ];
-                    $DB->insert_record('tiny_elements_comp_variant', $variantrecord);
+                    $existing = $DB->get_record('tiny_elements_comp_variant', $variantrecord);
+                    if (!$existing) {
+                        $DB->insert_record('tiny_elements_comp_variant', $variantrecord);
+                    }
                 }
             }
         }
@@ -451,9 +457,12 @@ class importer {
     public function import_component_variant(array|object $record, array $componentmap): int {
         global $DB;
         $record = (array) $record;
-        if (isset($componentmap[$record['component']])) {
-            $record['component'] = $componentmap[$record['component']];
+        // Do not import relations for components that are not part of the import.
+        if (!isset($componentmap[$record['component']])) {
+            return 0;
         }
+        $record['component'] = $componentmap[$record['component']];
+
         $current = $DB->get_record(
             'tiny_elements_comp_variant',
             ['component' => $record['component'], 'variant' => $record['variant']]
