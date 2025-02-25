@@ -528,6 +528,7 @@ class manager {
              JOIN {tiny_elements_comp_variant} cpv
              ON cp.name = cpv.componentname
              WHERE cpv.variant = ?
+             GROUP BY c.name
              ORDER BY cnt DESC',
             [$variantname],
             IGNORE_MULTIPLE
@@ -556,6 +557,7 @@ class manager {
              JOIN {tiny_elements_comp_flavor} cpf
              ON cp.name = cpf.componentname
              WHERE cpf.flavorname = ?
+             GROUP BY c.name
              ORDER BY cnt DESC',
             [$flavorname],
             IGNORE_MULTIPLE
