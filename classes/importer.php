@@ -226,7 +226,30 @@ class importer {
             self::import_component_variant($componentvariant, $componentmap);
         }
 
+        self::update_flavor_variant_category();
+
         return true;
+    }
+
+    /**
+     * Updates all flavors and variants that do not have a categoryname yet.
+     */
+    public function update_flavor_variant_category() {
+        global $DB;
+
+        $manager = new manager();
+
+        $flavors = $DB->get_records('tiny_elements_flavor', ['categoryname' => '']);
+        foreach ($flavors as $flavor) {
+            $categoryname = $manager->get_compcatname_for_flavor($flavor->name);
+            $DB->set_field('tiny_elements_flavor', 'categoryname', $categoryname, ['id' => $flavor->id]);
+        }
+
+        $variants = $DB->get_records('tiny_elements_variant', ['categoryname' => '']);
+        foreach ($variants as $variant) {
+            $categoryname = $manager->get_compcatname_for_variant($variant->name);
+            $DB->set_field('tiny_elements_variant', 'categoryname', $categoryname, ['id' => $variant->id]);
+        }
     }
 
     /**

@@ -524,7 +524,7 @@ class manager {
             'SELECT c.name, COUNT(c.id) AS cnt
              FROM {tiny_elements_compcat} c
              JOIN {tiny_elements_component} cp
-             ON c.id = cp.compcat
+             ON c.name = cp.categoryname
              JOIN {tiny_elements_comp_variant} cpv
              ON cp.name = cpv.componentname
              WHERE cpv.variant = ?
@@ -552,7 +552,7 @@ class manager {
             'SELECT c.name, COUNT(c.id) AS cnt
              FROM {tiny_elements_compcat} c
              JOIN {tiny_elements_component} cp
-             ON c.id = cp.compcat
+             ON c.name = cp.categoryname
              JOIN {tiny_elements_comp_flavor} cpf
              ON cp.name = cpf.componentname
              WHERE cpf.flavorname = ?
