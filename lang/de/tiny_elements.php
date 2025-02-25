@@ -19,7 +19,8 @@
  *
  * @package     tiny_elements
  * @category    string
- * @copyright   2022 Marc Català <reskit@gmail.com>
+ * @copyright   2025 ISB Bayern
+ * @author      Stefan Hanauska <stefan.hanauska@csg-in.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['additem'] = 'Hinzufügen';
 $string['button_elements'] = 'Elemente';
 $string['c4lcompatibility'] = 'Wenn ausgewählt, lautet der Varianten-Klassenname c4l-...-variant anstelle von elements-...-variant, um mit den ursprünglichen c4l-Komponenten kompatibel zu sein.';
-$string['c4lcompatibility_help'] = 'C4l (components for learning) ist das Plugin auf dem Elements basiert.';
+$string['c4lcompatibility_help'] = 'C4L (components for learning) ist das Plugin auf dem Elements basiert.';
 $string['cachedef_tiny_elements_css'] = 'Cache für tiny_elements CSS';
 $string['code'] = 'Code';
 $string['code_help'] = 'Einzufügender HTML-Code. Sie können {{VARIANTS}}, {{FLAVOR}} und {{PLACEHOLDER}} als Platzhalter für Varianten, Geschmacksrichtungen und einzufügenden Text verwenden.';
@@ -47,7 +48,7 @@ $string['displayname_help'] = 'Name der Komponente, der den Benutzern angezeigt 
 $string['displayorder'] = 'Anzeigereihenfolge';
 $string['edititem'] = 'Element bearbeiten';
 $string['elements:manage'] = 'Komponenten verwalten';
-$string['elements:viewplugin'] = 'Elements-Plugin anzeigen';
+$string['elements:viewplugin'] = 'Kurselemente-Plugin anzeigen';
 $string['enablepreview'] = 'Vorschau aktivieren';
 $string['enablepreview_desc'] = 'Wenn aktiviert, wird eine Vorschau angezeigt, wenn Sie mit der Maus über jede Komponente fahren.';
 $string['error_export'] = 'Fehler beim Erstellen der Exportdatei';
@@ -61,21 +62,18 @@ $string['errorname'] = 'Name darf nicht leer sein';
 $string['export'] = 'Exportieren';
 $string['files'] = 'Dateien';
 $string['flavors'] = 'Geschmacksrichtungen';
-$string['foundcompcat'] = 'Nicht zugewiesene Elemente';
 $string['generalsettings'] = 'Allgemeine Einstellungen';
 $string['hideforstudents'] = 'Verbergen für Schüler';
 $string['iconurl'] = 'Symbol-URL';
-$string['imageclass'] = 'Bildklasse';
 $string['import'] = 'Importieren';
-$string['inlinetag'] = 'Inline-Tag';
 $string['js'] = 'JS';
 $string['linktomanagerdesc'] = 'Gehen Sie zu <a href="{$a}">Verwaltung</a>, um Änderungen vorzunehmen.';
 $string['linktomanagername'] = 'Link zur Verwaltung';
 $string['manage'] = 'Verwalten';
 $string['management'] = 'Verwaltung';
-$string['menuitem_elements'] = 'Komponenten fürs Lernen (Elements)';
+$string['menuitem_elements'] = 'Kurselemente';
 $string['name'] = 'Name';
-$string['pluginname'] = 'Komponenten fürs Lernen (Elements)';
+$string['pluginname'] = 'Kurselemente';
 $string['preview'] = 'Vorschau';
 $string['previewcss'] = 'Vorschau-CSS';
 $string['previewcsstext'] = 'Wenn alles korrekt ist, sollte die Komponente in allen Geschmacksrichtungen angezeigt werden.';
