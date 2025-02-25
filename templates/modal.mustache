@@ -107,17 +107,17 @@
                 {{#categories}}
                     {{#hasFlavors}}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {{active}}" data-toggle="dropdown" data-categoryid="{{categoryid}}"data-categoryname="{{categoryname}}"  href="#" role="button" aria-expanded="false">{{name}}</a>
+                        <a class="nav-link dropdown-toggle {{active}}" data-toggle="dropdown" data-categoryid="{{categoryid}}" data-categoryname="{{categoryname}}" href="#" role="button" aria-expanded="false">{{name}}</a>
                         <div class="dropdown-menu">
                             {{#flavors}}
-                                <a class="dropdown-item elements-category-flavor {{flavorClass}} {{factive}}" data-id="{{id}}"data-categoryname="{{categoryname}}"  data-categoryid="{{categoryid}}" data-flavor="{{name}}" aria-controls="elements-buttons-grid"  href="#">{{displayname}}</a>
+                                <a class="dropdown-item elements-category-flavor {{flavorClass}} {{factive}}" data-id="{{id}}" data-categoryname="{{categoryname}}" data-categoryid="{{categoryid}}" data-flavor="{{name}}" aria-controls="elements-buttons-grid"  href="#">{{displayname}}</a>
                             {{/flavors}}
                         </div>
                     </li>
                     {{/hasFlavors}}
                     {{^hasFlavors}}
                     <li class="nav-item">
-                        <a class="nav-link {{active}} elements-category no-flavors" href="#" data-id="{{id}}"data-categoryname="{{categoryname}}"  data-categoryid="{{categoryid}}" data-filter="{{type}}" aria-controls="elements-buttons-grid">{{name}}</a>
+                        <a class="nav-link {{active}} elements-category no-flavors" href="#" data-id="{{id}}" data-categoryname="{{categoryname}}" data-categoryid="{{categoryid}}" data-filter="{{type}}" aria-controls="elements-buttons-grid">{{name}}</a>
                     </li>
                     {{/hasFlavors}}
                 {{/categories}}
