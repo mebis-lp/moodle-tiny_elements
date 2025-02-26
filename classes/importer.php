@@ -297,7 +297,7 @@ class importer {
     public function import_component(array|object $record, array $categorymap): int {
         global $DB;
         $record = (array) $record;
-        if (isset($categorymap[$record['compcat']])) {
+        if (array_key_exists('compcat', $record) && array_key_exists($record['compcat'], $categorymap)) {
             $record['compcat'] = $categorymap[$record['compcat']];
             $record['categoryname'] = $DB->get_field('tiny_elements_compcat', 'name', ['id' => $record['compcat']]);
         }
