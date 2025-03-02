@@ -32,8 +32,13 @@ use tiny_elements\importer;
  * @return bool
  */
 function xmldb_tiny_elements_install() {
-    $basezip = __DIR__ . '/base.zip';
-    $importer = new importer();
-    $importer->import($basezip);
+    try {
+        $basezip = __DIR__ . '/base.zip';
+        $importer = new importer();
+        $importer->import($basezip);
+    } catch (Exception $e) {
+        debugging($e->getMessage(), DEBUG_NORMAL);
+        return false;
+    }
     return true;
 }
