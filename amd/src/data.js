@@ -129,6 +129,7 @@ export default class Data {
                 componentVariants.push({
                     id: variantitem.id,
                     name: variantitem.name,
+                    displayname: variantitem.displayname,
                     state: state,
                     imageClass: variantitem.name + '-variant-' + state,
                     variantclass: (variantitem.c4lcompatibility ? 'c4l' : 'elements') + '-' + variantitem.name + '-variant',
