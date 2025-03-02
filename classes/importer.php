@@ -46,6 +46,7 @@ class importer {
      */
     public function __construct(int $contextid = SYSCONTEXTID, bool $whatif = false) {
         $this->contextid = $contextid;
+        $this->whatif = $whatif;
     }
 
     /**
