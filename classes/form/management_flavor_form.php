@@ -55,9 +55,6 @@ class management_flavor_form extends base_form {
         $mform->addElement('text', 'displayorder', get_string('displayorder', 'tiny_elements'), ['size' => '3']);
         $mform->setType('displayorder', PARAM_INT);
 
-        $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'content', get_string('content', 'tiny_elements'));
-        $mform->setType('content', PARAM_RAW);
-
         $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'css', get_string('css', 'tiny_elements'));
         $mform->setType('css', PARAM_RAW);
 

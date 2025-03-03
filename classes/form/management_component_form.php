@@ -89,9 +89,6 @@ class management_component_form extends base_form {
         $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'css', get_string('css', 'tiny_elements'));
         $mform->setType('css', PARAM_RAW);
 
-        $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'js', get_string('js', 'tiny_elements'));
-        $mform->setType('js', PARAM_RAW);
-
         $mform->addElement('url', 'iconurl', get_string('iconurl', 'tiny_elements'), ['size' => '255']);
         $mform->setType('iconurl', PARAM_URL);
 
