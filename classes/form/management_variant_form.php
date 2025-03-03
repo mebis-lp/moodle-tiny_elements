@@ -52,7 +52,7 @@ class management_variant_form extends base_form {
             $mform->setDefault('categoryname', $this->_ajaxformdata['categoryname']);
         }
 
-        $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'content', get_string('content', 'tiny_elements'));
+        $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'content', get_string('code', 'tiny_elements'));
         $mform->setType('content', PARAM_RAW);
 
         $mform->addElement($this->codemirror_present() ? 'editor' : 'textarea', 'css', get_string('css', 'tiny_elements'));
