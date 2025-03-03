@@ -101,9 +101,7 @@ class management_import_form extends base_form {
 
         $return = ['update' => !$whatif];
 
-        if (!$whatif) {
-            \tiny_elements\local\utils::purge_css_cache();
-        } else {
+        if ($whatif) {
             $results = $importer->get_importresults();
             $return['results'] = $results;
         }

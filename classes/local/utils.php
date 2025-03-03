@@ -347,6 +347,16 @@ class utils {
     }
 
     /**
+     * Purge and rebuild all caches.
+     */
+    public static function purge_and_rebuild_caches(): void {
+        self::purge_css_cache();
+        self::purge_js_cache();
+        self::rebuild_css_cache();
+        self::rebuild_js_cache();
+    }
+
+    /**
      * Helper function to retrieve the currently cached tiny_elements css.
      *
      * @return string|false the css code as string, false if no cache entry found

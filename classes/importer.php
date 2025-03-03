@@ -88,13 +88,6 @@ class importer {
                 $this->importfiles($categoryfiles, $category->id, $category->name);
             }
             $fs->delete_area_files($this->contextid, 'tiny_elements', 'import', $draftitemid);
-
-            if (!$this->whatif) {
-                local\utils::purge_css_cache();
-                local\utils::rebuild_css_cache();
-                local\utils::purge_js_cache();
-                local\utils::rebuild_js_cache();
-            }
         }
     }
 
@@ -228,6 +221,10 @@ class importer {
         }
 
         self::update_flavor_variant_category();
+
+        if (!$this->whatif) {
+            local\utils::purge_and_rebuild_caches();
+        }
 
         return true;
     }
