@@ -38,7 +38,7 @@ $component  = required_param('component', PARAM_ALPHANUMEXT);
 $flavor  = required_param('flavor', PARAM_ALPHANUMEXT);
 
 $componentdata = $DB->get_record('tiny_elements_component', ['name' => $component]);
-$categorydata = $DB->get_record('tiny_elements_compcat', ['id' => $componentdata->compcat]);
+$categorydata = $DB->get_record('tiny_elements_compcat', ['name' => $componentdata->categoryname]);
 $flavordata = $DB->get_record('tiny_elements_flavor', ['name' => $flavor]);
 
 $variant = '';
