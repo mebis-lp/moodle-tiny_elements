@@ -28,6 +28,7 @@ const isstudentName = getPluginOptionName(pluginName, 'isstudent');
 const showpreviewName = getPluginOptionName(pluginName, 'showpreview');
 const viewElementsName = getPluginOptionName(pluginName, 'viewelements');
 const cssUrlName = getPluginOptionName(pluginName, 'cssurl');
+const canManageName = getPluginOptionName(pluginName, 'canmanage');
 
 export const register = (editor) => {
     const registerOption = editor.options.register;
@@ -50,6 +51,11 @@ export const register = (editor) => {
     registerOption(cssUrlName, {
         processor: 'string',
         "default":  '',
+    });
+
+    registerOption(canManageName, {
+        processor: 'boolean',
+        "default":  false,
     });
 };
 
@@ -83,3 +89,10 @@ export const showPreview = (editor) => editor.options.get(showpreviewName);
  * @returns {string}
  */
 export const getCssUrl = (editor) => editor.options.get(cssUrlName);
+
+/**
+ * Whether the use hat tiny_elements/manage capability.
+ * @param {TinyMCE} editor
+ * @returns boolean
+ */
+export const canManage = (editor) => editor.options.get(canManageName);

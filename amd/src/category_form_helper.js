@@ -17,7 +17,7 @@
  * Helper for autocomplete form element to select only variants that belong to the
  * selected category.
  *
- * @module     tiny_elements/category_form_variants
+ * @module     tiny_elements/category_form_helper
  * @copyright  2025 ISB Bayern
  * @authors    Stefan Hanauska <stefan.hanauska@csg-in.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

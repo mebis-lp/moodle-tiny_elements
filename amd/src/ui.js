@@ -25,7 +25,8 @@ import ElementsModal from './modal';
 import ModalFactory from 'core/modal_factory';
 import {
     isStudent,
-    showPreview
+    showPreview,
+    canManage
 } from './options';
 import ModalEvents from 'core/modal_events';
 import {
@@ -64,7 +65,8 @@ export const handleAction = async(editor) => {
     data = new Data(
         getContextId(editor),
         isStudent(editor),
-        showPreview(editor)
+        showPreview(editor),
+        canManage(editor)
     );
     await data.loadData();
     setVariantsData(data);

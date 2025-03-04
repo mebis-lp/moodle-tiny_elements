@@ -40,12 +40,14 @@ export default class Data {
     variants = [];
     langStrings = {};
     userStudent = false;
+    canManage = false;
     contextid = 1;
 
-    constructor(contextid, userStudent, previewElements) {
+    constructor(contextid, userStudent, previewElements, canManage) {
         this.contextid = contextid;
         this.userStudent = userStudent;
         this.previewElements = previewElements;
+        this.canManage = canManage;
         setVariantsData(this);
     }
 
@@ -190,6 +192,7 @@ export default class Data {
             buttons: this.getButtons(editor),
             categories: this.getCategories(),
             preview: this.previewElements,
+            canmanage: this.canManage,
         });
     }
 

@@ -75,6 +75,7 @@ class plugininfo extends plugin implements plugin_with_buttons, plugin_with_conf
         $viewelements = has_capability('tiny/elements:viewplugin', $context);
         $showpreview = get_config('tiny_elements', 'enablepreview');
         $isstudent = !has_capability('gradereport/grader:view', $context);
+        $canmanage = has_capability('tiny/elements:manage', $context);
 
         $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
         $rev = $cache->get(constants::CSS_CACHE_REV);
@@ -95,6 +96,7 @@ class plugininfo extends plugin implements plugin_with_buttons, plugin_with_conf
             'showpreview' => ($showpreview == '1'),
             'viewelements' => $viewelements,
             'cssurl' => $cssurl,
+            'canmanage' => $canmanage,
         ];
     }
 

@@ -95,14 +95,20 @@
         }
     ],
     "preview": true,
-    "elementid": "elements-plugin-container"
+    "elementid": "elements-plugin-container",
+    "canmanage": true
     }
 
 }}
 {{< core/modal }}
-    {{$title}}
-        {{#str}} pluginname, tiny_elements {{/str}}
-    {{/title}}
+    {{$header}}
+        <h5 id="{{uniqid}}-modal-title" class="modal-title" data-region="title">{{#str}} pluginname, tiny_elements {{/str}}</h5>
+        {{#canmanage}}
+        <a href="{{global.config.wwwroot}}/lib/editor/tiny/plugins/elements/management.php" class="btn btn-sm" target="_blank">
+            {{#pix}} i/settings, core, {{#str}} manage, tiny_elements {{/str}}{{/pix}}
+        </a>
+        {{/canmanage}}
+    {{/header}}
     {{$body}}
         <div id="{{elementid}}" class="elements-plugin-container">
             <ul class="nav nav-tabs">
