@@ -40,10 +40,10 @@ require_capability('tiny/elements:manage', context_system::instance());
 echo $OUTPUT->header();
 
 // Get all elements components.
-$dbcompcats = $DB->get_records('tiny_elements_compcat');
-$dbflavor = $DB->get_records('tiny_elements_flavor');
+$dbcompcats = $DB->get_records('tiny_elements_compcat', [], 'displayorder');
+$dbflavor = $DB->get_records('tiny_elements_flavor', [], 'displayorder');
 $dbcompflavor = $DB->get_records('tiny_elements_comp_flavor');
-$dbcomponent = $DB->get_records('tiny_elements_component');
+$dbcomponent = $DB->get_records('tiny_elements_component', [], 'displayorder');
 $dbvariant = $DB->get_records('tiny_elements_variant');
 $dbcompvariant = $DB->get_records('tiny_elements_comp_variant');
 
