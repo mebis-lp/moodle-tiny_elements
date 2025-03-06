@@ -140,6 +140,7 @@ export default class Data {
                 });
             }
         });
+        componentVariants.sort((a, b) => (a.name.localeCompare(b.name)));
         return componentVariants;
     }
 

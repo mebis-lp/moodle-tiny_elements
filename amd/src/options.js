@@ -29,6 +29,7 @@ const showpreviewName = getPluginOptionName(pluginName, 'showpreview');
 const viewElementsName = getPluginOptionName(pluginName, 'viewelements');
 const cssUrlName = getPluginOptionName(pluginName, 'cssurl');
 const canManageName = getPluginOptionName(pluginName, 'canmanage');
+const markComponentsName = getPluginOptionName(pluginName, 'markcomponents');
 
 export const register = (editor) => {
     const registerOption = editor.options.register;
@@ -54,6 +55,11 @@ export const register = (editor) => {
     });
 
     registerOption(canManageName, {
+        processor: 'boolean',
+        "default":  false,
+    });
+
+    registerOption(markComponentsName, {
         processor: 'boolean',
         "default":  false,
     });
@@ -96,3 +102,10 @@ export const getCssUrl = (editor) => editor.options.get(cssUrlName);
  * @returns boolean
  */
 export const canManage = (editor) => editor.options.get(canManageName);
+
+/**
+ * Whether to inject HTML comments to mark components.
+ * @param {TinyMCE} editor
+ * @returns boolean
+ */
+export const markComponents = (editor) => editor.options.get(markComponentsName);

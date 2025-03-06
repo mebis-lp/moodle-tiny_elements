@@ -26,7 +26,8 @@ import ModalFactory from 'core/modal_factory';
 import {
     isStudent,
     showPreview,
-    canManage
+    canManage,
+    markComponents
 } from './options';
 import ModalEvents from 'core/modal_events';
 import {
@@ -353,6 +354,9 @@ const handleButtonClick = async(event, editor, modal) => {
         newNode.innerHTML = placeholder;
         componentCode = updateComponentCode(componentCode, selectedButton, newNode.outerHTML, flavor);
         // Sets new content.
+        if (markComponents) {
+            componentCode = '<!-- tiny_elements -->' + componentCode + '<!-- /tiny_elements -->';
+        }
         editor.selection.setContent(componentCode);
 
         // Select text.
