@@ -35,8 +35,9 @@
 .elements-buttons-grid {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-evenly;
+    justify-content: start;
     row-gap: 12px;
+    column-gap: 12px;
     margin-bottom: 0;
     width: 100%;
     overflow-y: auto;
@@ -131,8 +132,3 @@
     position: absolute;
 }
 
-.elements-code-preview .elements-component-code .elements-learningoutcomes {
-    -webkit-transform: translateY(-15px);
-    -ms-transform: translateY(-15px);
-    transform: translateY(-15px);
-}
