@@ -53,7 +53,7 @@ class management_component_form extends base_form {
         $mform->addHelpButton('displayname', 'displayname', 'tiny_elements');
 
         $mform->addElement('select', 'categoryname', get_string('category', 'tiny_elements'), $compcats);
-        $mform->setType('categoryname', PARAM_INT);
+        $mform->setType('categoryname', PARAM_TEXT);
         if (!empty($this->_ajaxformdata['categoryname'])) {
             $mform->setDefault('categoryname', $this->_ajaxformdata['categoryname']);
         }
