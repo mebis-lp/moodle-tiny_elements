@@ -90,8 +90,7 @@ export const init = async(params) => {
     let duplicateitems = document.getElementsByClassName('duplicate');
     duplicateitems.forEach(element => {
         element.addEventListener('click', async() => {
-            duplicateItem(element.dataset.id, element.dataset.table);
-            reload();
+            duplicateItem(element.dataset.id, element.dataset.table).always(() => reload());
         });
     });
 

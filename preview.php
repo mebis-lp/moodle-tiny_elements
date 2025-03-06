@@ -43,8 +43,9 @@ $flavordata = $DB->get_record('tiny_elements_flavor', ['name' => $flavor]);
 
 $variant = '';
 $varianthtml = '';
-$componentdata->code = str_replace('{{CATEGORY}}', $categorydata->name, $componentdata->code);
-$componentdata->code = str_replace('{{COMPONENT}}', $component, $componentdata->code);
+$componentdata->code = str_replace('{{CATEGORY}}', 'elements-' . $categorydata->name, $componentdata->code);
+$componentdata->code = str_replace('{{COMPONENT}}', 'elements-' . $component, $componentdata->code);
+$componentdata->code = str_replace('{{FLAVOR}}', 'elements-' . $flavor . '-flavor', $componentdata->code);
 $componentdata->code = str_replace('{{VARIANTS}}', $variant, $componentdata->code);
 $componentdata->code = str_replace('{{VARIANTSHTML}}', $varianthtml, $componentdata->code);
 $componentdata->code = str_replace('{{PLACEHOLDER}}', $componentdata->text ?? 'Lorem ipsum', $componentdata->code);

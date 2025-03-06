@@ -310,13 +310,13 @@ const updateComponentCode = (componentCode, selectedButton, placeholder, flavor 
     }
 
     if (currentFlavor) {
-        componentCode = componentCode.replace('{{FLAVOR}}', currentFlavor);
+        componentCode = componentCode.replace('{{FLAVOR}}', 'elements-' + currentFlavor + '-flavor');
     } else {
         componentCode = componentCode.replace('{{FLAVOR}}', '');
     }
 
-    componentCode = componentCode.replace('{{COMPONENT}}', comp.name);
-    componentCode = componentCode.replace('{{CATEGORY}}', data.getCategoryById(currentCategoryId).name);
+    componentCode = componentCode.replace('{{COMPONENT}}', 'elements-' + comp.name);
+    componentCode = componentCode.replace('{{CATEGORY}}', 'elements-' + data.getCategoryById(currentCategoryId).name);
 
     // Apply random IDs.
     componentCode = applyRandomID(componentCode);

@@ -34,13 +34,13 @@ Components can also have up to three **variants** that can be switched on/off (m
 
 ### Base templates (delivered with the plugin)
 
-The plugin has some templates in db/base.zip. They are imported at installation time - feel free to use or to erase them.
+The plugin has some templates in db/base.zip. They can be imported after installation - feel free to use or to ignore them.
 
 ### Naming
 
 Every category, component, flavor and variant needs a unique name. Please use lowercase names without spaces and special characters other than "-" and "_" (these names are used as part of CSS class names) and keep in mind, that these names might conflict with existing CSS class names or other existing custom components / categories / ...
 
-Variants are a bit special here: The CSS class is always called "elements-..-variant" where ".." is the name of the variant. This is due to compatibility with the tiny_c4l plugin.
+Categories and components will be prefixed by "elements-", flavors and variants written as "elements-..-flavor" / "elements-..-variant" where ".." is the name of the flavor / variant.
 
 Example for naming:
 
@@ -62,7 +62,7 @@ You will need to create at least one category for your components.
 
 You can enter the following data for your category:
 
-Name: The internal name (not displayed to the users), should be also used as a CSS class name (see "Naming" above).
+Name: The internal name (not displayed to the users), should be also used as part of the CSS class name (see "Naming" above).
 Display name: The name displayed to the users.
 Display order: Categories will be sorted by this number when they are presented to the users (ascending order).
 CSS: CSS code that is common for all parts of the category.
@@ -72,14 +72,14 @@ Files: Upload the files you want to use in your category (this will mainly be im
 
 When creating a component you can enter the following data:
 
-Name: The internal name (not displayed to the users), should be also used as a CSS class name (see "Naming" above).
+Name: The internal name (not displayed to the users), should be also used as part of the CSS class name (see "Naming" above).
 Display name: The name displayed to the users.
 Category: The category the component belongs to.
 Code: The HTML code that is inserted to the TinyMCE content area. This can contain the following placeholders:
 * {{PLACEHOLDER}} - this is replaced by the currently selected text or (if nothing is selected) a dummy text
-* {{CATEGORY}} - the name of the category
-* {{COMPONENT}} - the name of the component
-* {{FLAVOR}} - the name of the chosen flavor (is empty, if none is chosen)
+* {{CATEGORY}} - the name of the category, prefixed by "elements-"
+* {{COMPONENT}} - the name of the component, prefixed by "elements-"
+* {{FLAVOR}} - "elements-..-flavor" where ".." is the name of the chosen flavor (is empty, if none is chosen)
 * {{VARIANTS}} - the space separated names of the activated variants in the format "elements-..-variant" where ".." is the name of the variant
 * {{VARIANTSHTML}} - the concatenated HTML code for all activated variants
 
@@ -96,7 +96,7 @@ Hide for students: Check this to show this component only to teachers.
 
 You don't need to have flavors. If you create a flavor, you can enter the following data:
 
-Name: The internal name (not displayed to the users), should be also used as a CSS class name (see "Naming" above).
+Name: The internal name (not displayed to the users), will be part of the CSS class name ("elements-..-flavor", see "Naming" above).
 Display name: The name displayed to the users.
 Category: The category the flavor belongs to.
 Display order: Flavors will be sorted by this number when they are presented to the users (ascending order).
@@ -109,7 +109,7 @@ In addition (after saving), the button icons for components can be changed depen
 
 You don't need to have variants. If you create a variant, you can enter the following data:
 
-Name: The internal name (not displayed to the users). Please be aware, that for compatibility reasons the CSS class name is in the format "elements-..-variant" where ".." is the name of the variant (see "Naming" above).
+Name: The internal name (not displayed to the users), will be part of the CSS class name ("elements-..-variant", see "Naming" above).
 Display name: The name displayed to the users.
 Category: The category the flavor belongs to.
 Content: HTML code that is added to the {{VARIANTSHTML}} placeholder.

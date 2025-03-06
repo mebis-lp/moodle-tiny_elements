@@ -32,13 +32,15 @@ $url = new moodle_url('/lib/editor/tiny/plugins/elements/printurls.php', []);
 $PAGE->set_url($url);
 $PAGE->set_context(context_system::instance());
 
+$categoryid = optional_param('categoryid', 0, PARAM_INT);
+
 require_capability('tiny/elements:manage', context_system::instance());
 
 $PAGE->set_heading($SITE->fullname);
 echo $OUTPUT->header();
 
 $fs = get_file_storage();
-$files = $fs->get_area_files(context_system::instance()->id, 'tiny_elements', 'images');
+$files = $fs->get_area_files(SYSCONTEXTID, 'tiny_elements', 'images', (empty($categoryid) ? false : $categoryid));
 $processedfiles = [];
 foreach ($files as $file) {
     if ($file->is_directory()) {

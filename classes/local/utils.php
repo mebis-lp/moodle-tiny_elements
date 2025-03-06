@@ -50,7 +50,7 @@ class utils {
                     'code' => self::replace_pluginfile_urls($record->code, true),
                     'text' => $record->text,
                     'displayorder' => $record->displayorder,
-                    'js' => self::replace_pluginfile_urls($record->js, true),
+                    'js' => self::replace_pluginfile_urls($record->js ?? '', true),
             ];
         }
         return $components;
