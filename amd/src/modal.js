@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * C4L Modal for Tiny.
+ * Elements Modal for Tiny.
  *
- * @module      tiny_c4l/modal
+ * @module      tiny_elements/modal
  * @copyright   2022 Marc Català <reskit@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -24,9 +24,15 @@
 import Modal from 'core/modal';
 import ModalRegistry from 'core/modal_registry';
 
-const C4LModal = class extends Modal {
-    static TYPE = 'tiny_c4l/modal';
-    static TEMPLATE = 'tiny_c4l/modal';
+const ElementsModal = class extends Modal {
+    static TYPE = 'tiny_elements/modal';
+    static TEMPLATE = 'tiny_elements/modal';
+
+    configure(modalConfig) {
+        // Remove modal from DOM on close.
+        modalConfig.removeOnClose = true;
+        super.configure(modalConfig);
+    }
 
     registerEventListeners() {
         // Call the parent registration.
@@ -34,6 +40,6 @@ const C4LModal = class extends Modal {
     }
 };
 
-ModalRegistry.register(C4LModal.TYPE, C4LModal, C4LModal.TEMPLATE);
+ModalRegistry.register(ElementsModal.TYPE, ElementsModal, ElementsModal.TEMPLATE);
 
-export default C4LModal;
+export default ElementsModal;

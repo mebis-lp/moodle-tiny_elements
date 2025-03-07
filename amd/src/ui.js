@@ -14,45 +14,47 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tiny C4L UI.
+ * Tiny Elements UI.
  *
- * @module      tiny_c4l/ui
+ * @module      tiny_elements/ui
  * @copyright   2022 Marc Català <reskit@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {component} from './common';
-import C4LModal from './modal';
+import ElementsModal from './modal';
 import ModalFactory from 'core/modal_factory';
-import {components as Components} from './components';
-import {get_strings as getStrings} from 'core/str';
 import {
     isStudent,
-    getallowedComponents,
     showPreview,
-    getpreviewCSS,
-    getcustomComponents
+    canManage,
+    markComponents
 } from './options';
 import ModalEvents from 'core/modal_events';
 import {
     addVariant,
     getVariantsClass,
     getVariantHtml,
+    getVariantPreferences,
     getVariantsHtml,
     loadVariantPreferences,
     removeVariant,
-    saveVariantPreferences,
-    variantExists
+    setData as setVariantsData
 } from './variantslib';
+import {
+    savePreferences,
+    loadPreferences,
+    Preferences
+} from './preferencelib';
+import {getContextId} from 'editor_tiny/options';
+import Data from './data';
 
-let userStudent = false;
-let previewC4L = true;
-let allowedComponents = [];
-let Contexts = [];
-let langStrings = {};
-let previewCSS = '';
-let customComponents = [];
-const compPrefix = 'c4lv-';
+let currentFlavor = '';
+let currentFlavorId = 0;
+let currentCategoryId = 1;
+let currentCategoryName = '';
+let lastFlavor = [];
+let sel = '';
+let data = {};
 
 /**
  * Handle action
@@ -60,14 +62,27 @@ const compPrefix = 'c4lv-';
  * @param {TinyMCE} editor
  */
 export const handleAction = async(editor) => {
-    userStudent = isStudent(editor);
-    previewC4L = showPreview(editor);
-    customComponents = getcustomComponents(editor);
-    addCustomComponents();
-    allowedComponents = getallowedComponents(editor);
-    previewCSS = getpreviewCSS(editor);
-    langStrings = await getAllStrings();
-    loadVariantPreferences(Components).then(() => displayDialogue(editor));
+    sel = editor.selection.getContent();
+    data = new Data(
+        getContextId(editor),
+        isStudent(editor),
+        showPreview(editor),
+        canManage(editor)
+    );
+    await data.loadData();
+    setVariantsData(data);
+
+    currentCategoryId = await loadPreferences(Preferences.category);
+    lastFlavor = await loadPreferences(Preferences.category_flavors);
+    if (lastFlavor === null) {
+        lastFlavor = [];
+    }
+    let componentVariants = await loadPreferences(Preferences.component_variants);
+    if (componentVariants === null) {
+        componentVariants = {};
+    }
+    loadVariantPreferences(componentVariants);
+    displayDialogue(editor);
 };
 
 /**
@@ -76,27 +91,19 @@ export const handleAction = async(editor) => {
  * @param  {TinyMCE} editor
  */
 const displayDialogue = async(editor) => {
-    const data = Object.assign({}, {});
-
+    const templateContext = data.getTemplateContext(editor);
     // Show modal with buttons.
     const modal = await ModalFactory.create({
-        type: C4LModal.TYPE,
-        templateContext: await getTemplateContext(editor, data),
+        type: ElementsModal.TYPE,
+        templateContext: templateContext,
         large: true,
     });
 
     // Choose class to modal.
-    const modalClass = previewC4L ? 'c4l-modal' : 'c4l-modal-no-preview';
+    const modalClass = data.getPreviewElements() ? 'elements-modal' : 'elements-modal-no-preview';
 
     // Set class to modal.
     editor.targetElm.closest('body').classList.add(modalClass);
-
-    // Inject custom component styles in editor.
-    if (previewCSS !== "") {
-        const styles = document.createElement('style');
-        styles.textContent = previewCSS;
-        editor.targetElm.closest('body').appendChild(styles);
-    }
 
     modal.show();
 
@@ -105,25 +112,37 @@ const displayDialogue = async(editor) => {
         handleModalHidden(editor);
     });
 
-    // Event filters listener.
-    const filters = modal.getRoot()[0].querySelectorAll('.c4l-button-filter');
-    filters.forEach(node => {
+    // Event listener for categories without flavors.
+    const soleCategories = modal.getRoot()[0].querySelectorAll('.elements-category.no-flavors');
+    soleCategories.forEach(node => {
         node.addEventListener('click', (event) => {
-            handleButtonFilterClick(event, modal);
+            handleCategoryClick(event, modal);
         });
     });
 
-    modal.getRoot()[0].querySelector('.c4l-select-filter').addEventListener('change', (event) => {
-       handleSelectFilterChange(event, modal);
+    // Event listener for categories with flavors.
+    const selectCategories = modal.getRoot()[0].querySelectorAll('.elements-category-flavor');
+    selectCategories.forEach(node => {
+        node.addEventListener('click', (event) => {
+            handleCategoryFlavorClick(event, modal);
+        });
+    });
+
+    // Event listener for category dropdown, triggering to switch to last used flavor.
+    const selectCategoriesRemember = modal.getRoot()[0].querySelectorAll('.nav-link.dropdown-toggle');
+    selectCategoriesRemember.forEach(node => {
+        node.addEventListener('click', (event) => {
+            handleCategoryRemember(event, modal);
+        });
     });
 
     // Event buttons listeners.
-    const buttons = modal.getRoot()[0].querySelectorAll('.c4lt-dialog-button');
+    const buttons = modal.getRoot()[0].querySelectorAll('.elementst-dialog-button');
     buttons.forEach(node => {
         node.addEventListener('click', (event) => {
             handleButtonClick(event, editor, modal);
         });
-        if (previewC4L) {
+        if (data.getPreviewElements()) {
             node.addEventListener('mouseenter', (event) => {
                 handleButtonMouseEvent(event, modal, true);
             });
@@ -134,44 +153,41 @@ const displayDialogue = async(editor) => {
     });
 
     // Event variants listeners.
-    const variants = modal.getRoot()[0].querySelectorAll('.c4l-button-variant');
+    const variants = modal.getRoot()[0].querySelectorAll('.elements-button-variant');
     variants.forEach(node => {
         node.addEventListener('click', (event) => {
             handleVariantClick(event, modal);
         });
-        if (previewC4L) {
-            node.addEventListener('mouseenter', (event) => {
-                handleVariantMouseEvent(event, modal, true);
-            });
-            node.addEventListener('mouseleave', (event) => {
-                handleVariantMouseEvent(event, modal, false);
-            });
-        }
     });
-};
 
-/**
- * Handle a change within filter select.
- *
- * @param {MouseEvent} event The change event
- * @param {obj} modal
- */
-const handleSelectFilterChange = (event, modal) => {
-    const select = event.target.closest('select');
-
-    if (select) {
-        const currentContext = select.value;
-        if (Contexts.indexOf(currentContext) !== -1) {
-            // Select current button.
-            const buttons = modal.getRoot()[0]
-                .querySelectorAll('.c4l-buttons-filters button');
-            buttons.forEach(node => node.classList.remove('c4l-button-filter-enabled'));
-            const button = modal.getRoot()[0]
-                .querySelector('.c4l-button-filter[data-filter="' + currentContext + '"]');
-            button.classList.add('c4l-button-filter-enabled');
-
-            // Show/hide component buttons.
-            showContextButtons(modal, currentContext);
+    // Select first or saved category.
+    if (soleCategories.length > 0 || selectCategories.length > 0) {
+        const savedCategory = currentCategoryId;
+        const savedFlavor = lastFlavor[currentCategoryId];
+        if (soleCategories.length == 0 || soleCategories[0].displayorder > selectCategories[0].displayorder) {
+            selectCategories[0].click();
+        } else {
+            soleCategories[0].click();
+        }
+        if (savedCategory != 0) {
+            soleCategories.forEach((node) => {
+                if (node.dataset.categoryid == savedCategory) {
+                    node.click();
+                }
+            });
+            selectCategories.forEach((node) => {
+                if (node.dataset.categoryid == savedCategory) {
+                    node.click();
+                }
+            });
+            if (savedFlavor) {
+                const flavorlink = modal.getRoot()[0].querySelector(
+                    '.elements-category-flavor[data-id="' + savedFlavor + '"]'
+                );
+                if (flavorlink) {
+                    flavorlink.click();
+                }
+            }
         }
     }
 };
@@ -182,23 +198,84 @@ const handleSelectFilterChange = (event, modal) => {
  * @param {MouseEvent} event The change event
  * @param {obj} modal
  */
-const handleButtonFilterClick = (event, modal) => {
-    const button = event.target.closest('button');
+const handleCategoryClick = (event, modal) => {
+    const link = event.target;
+    currentCategoryId = link.dataset.categoryid;
+    currentCategoryName = link.dataset.categoryname;
 
-    const currentContext = button.dataset.filter;
-    // Filter button.
-    if (Contexts.indexOf(currentContext) !== -1) {
-        // Select current button.
-        const buttons = modal.getRoot()[0].querySelectorAll('.c4l-buttons-filters button');
-        buttons.forEach(node => node.classList.remove('c4l-button-filter-enabled'));
-        button.classList.add('c4l-button-filter-enabled');
+    // Remove active from all and set to selected.
+    const links = modal.getRoot()[0].querySelectorAll('.nav-link, .dropdown-item');
+    links.forEach(node => node.classList.remove('active'));
+    link.classList.add('active');
 
-        // Select current option in select.
-        const select = modal.getRoot()[0].querySelector('.c4l-select-filter');
-        select.selectedIndex = Contexts.indexOf(currentContext);
+    // Show/hide component buttons.
+    showCategoryButtons(modal, currentCategoryName);
+};
 
-        // Show/hide component buttons.
-        showContextButtons(modal, currentContext);
+/**
+ * Handle a click on a flavor in the category dropdown.
+ *
+ * @param {MouseEvent} event The change event
+ * @param {obj} modal
+ */
+const handleCategoryFlavorClick = (event, modal) => {
+    const link = event.target;
+    currentFlavor = link.dataset.flavor;
+    currentFlavorId = link.dataset.id;
+    currentCategoryId = link.dataset.categoryid;
+    currentCategoryName = link.dataset.categoryname;
+    lastFlavor[currentCategoryId] = currentFlavorId;
+
+    // Remove active from all and set to selected.
+    const links = modal.getRoot()[0].querySelectorAll('.nav-link, .dropdown-item');
+    links.forEach(node => node.classList.remove('active'));
+    link.classList.add('active');
+    const category = modal.getRoot()[0].querySelector('.nav-link[data-categoryid="' + currentCategoryId + '"]');
+    category.classList.add('active');
+
+    const componentButtons = modal.getRoot()[0].querySelectorAll('.elements-buttons-preview button');
+    componentButtons.forEach(componentButton => {
+        // Remove previous flavor.
+        if (componentButton.dataset.flavor != undefined) {
+            componentButton.classList.remove(componentButton.dataset.flavor);
+        }
+        componentButton.classList.add(currentFlavor);
+        componentButton.dataset.flavor = currentFlavor;
+        if (
+            (componentButton.dataset.flavorlist == '' || componentButton.dataset.flavorlist.split(',').includes(currentFlavor)) &&
+            componentButton.dataset.category == currentCategoryName
+        ) {
+            componentButton.classList.remove('elements-hidden');
+            if (componentButton.dataset.flavorlist != '') {
+                let variants = getVariantsClass(data.getComponentById(componentButton.dataset.id).name, currentFlavor);
+                let availableVariants = componentButton.querySelectorAll('.elements-button-variant');
+                availableVariants.forEach((variant) => {
+                    updateVariantButtonState(variant, variants.indexOf(variant.dataset.variantclass) != -1);
+                });
+            }
+        } else {
+            componentButton.classList.add('elements-hidden');
+        }
+    });
+
+};
+
+/**
+ * When opening the category dropdown, try to load remembered flavor.
+ *
+ * @param {MouseEvent} event The change event
+ * @param {obj} modal
+ */
+const handleCategoryRemember = (event, modal) => {
+    const link = event.target;
+    currentCategoryId = link.dataset.categoryid;
+    currentCategoryName = link.dataset.categoryname;
+    currentFlavorId = lastFlavor[currentCategoryId];
+
+    if (currentFlavorId != undefined) {
+        // Call handleCategoryFlavorClick with tampered data.
+        let e = {target: modal.getRoot()[0].querySelector('.elements-category-flavor[data-id="' + currentFlavorId + '"]')};
+        handleCategoryFlavorClick(e, modal);
     }
 };
 
@@ -208,8 +285,47 @@ const handleButtonFilterClick = (event, modal) => {
  * @param {obj} editor
  */
 const handleModalHidden = (editor) => {
-    editor.targetElm.closest('body').classList.remove('c4l-modal-no-preview');
-    saveVariantPreferences(Components);
+    editor.targetElm.closest('body').classList.remove('elements-modal-no-preview');
+    if (currentCategoryId != 0 && currentFlavorId != 0) {
+        savePreferences([
+            {type: Preferences.category, value: currentCategoryId},
+            {type: Preferences.category_flavors, value: JSON.stringify(lastFlavor)},
+            {type: Preferences.component_variants, value: JSON.stringify(getVariantPreferences())}
+        ]);
+    }
+};
+
+const updateComponentCode = (componentCode, selectedButton, placeholder, flavor = '') => {
+    componentCode = componentCode.replace('{{PLACEHOLDER}}', placeholder);
+    const comp = data.getComponentById(selectedButton);
+    // Return active variants for current component.
+    const variants = getVariantsClass(comp.name, flavor);
+
+    // Apply variants to html component.
+    if (variants.length > 0) {
+        componentCode = componentCode.replace('{{VARIANTS}}', variants.join(' '));
+        componentCode = componentCode.replace('{{VARIANTSHTML}}', getVariantsHtml(comp.name));
+    } else {
+        componentCode = componentCode.replace('{{VARIANTS}}', '');
+        componentCode = componentCode.replace('{{VARIANTSHTML}}', '');
+    }
+
+    if (currentFlavor) {
+        componentCode = componentCode.replace('{{FLAVOR}}', 'elements-' + currentFlavor + '-flavor');
+    } else {
+        componentCode = componentCode.replace('{{FLAVOR}}', '');
+    }
+
+    componentCode = componentCode.replace('{{COMPONENT}}', 'elements-' + comp.name);
+    componentCode = componentCode.replace('{{CATEGORY}}', 'elements-' + data.getCategoryById(currentCategoryId).name);
+
+    // Apply random IDs.
+    componentCode = applyRandomID(componentCode);
+
+    // Apply lang strings.
+    componentCode = applyLangStrings(componentCode);
+
+    return componentCode;
 };
 
 /**
@@ -219,42 +335,28 @@ const handleModalHidden = (editor) => {
  * @param {obj} editor
  * @param {obj} modal
  */
-const handleButtonClick = (event, editor, modal) => {
+const handleButtonClick = async(event, editor, modal) => {
     const selectedButton = event.target.closest('button').dataset.id;
 
+    const comp = data.getComponentById(selectedButton);
+
     // Component button.
-    const component = Components.find(element => element.name == selectedButton);
-    if (component != undefined) {
-        const sel = editor.selection.getContent();
-        let componentCode = component.code;
-        const placeholder = (sel.length > 0 ? sel : component.text);
+    if (comp) {
+        let componentCode = comp.code;
+        const placeholder = (sel.length > 0 ? sel : comp.text);
+
+        let flavor = comp.flavors.length > 0 ? currentFlavor : '';
 
         // Create a new node to replace the placeholder.
         const randomId = generateRandomID();
         const newNode = document.createElement('span');
         newNode.dataset.id = randomId;
         newNode.innerHTML = placeholder;
-        componentCode = componentCode.replace('{{PLACEHOLDER}}', newNode.outerHTML);
-
-        // Return active variants for current component.
-        const variants = getVariantsClass(component.name);
-
-        // Apply variants to html component.
-        if (variants.length > 0) {
-            componentCode = componentCode.replace('{{VARIANTS}}', variants.join(' '));
-            componentCode = componentCode.replace('{{VARIANTSHTML}}', getVariantsHtml(component.name));
-        } else {
-            componentCode = componentCode.replace('{{VARIANTS}}', '');
-            componentCode = componentCode.replace('{{VARIANTSHTML}}', '');
-        }
-
-        // Apply random IDs.
-        componentCode = applyRandomID(componentCode);
-
-        // Apply lang strings.
-        componentCode = applyLangStrings(componentCode);
-
+        componentCode = updateComponentCode(componentCode, selectedButton, newNode.outerHTML, flavor);
         // Sets new content.
+        if (markComponents) {
+            componentCode = '<!-- tiny_elements -->' + componentCode + '<!-- /tiny_elements -->';
+        }
         editor.selection.setContent(componentCode);
 
         // Select text.
@@ -279,35 +381,24 @@ const handleButtonMouseEvent = (event, modal, show) => {
     const selectedButton = event.target.closest('button').dataset.id;
     const node = modal.getRoot()[0].querySelector('div[data-id="code-preview-' + selectedButton + '"]');
     const previewDefault = modal.getRoot()[0].querySelector('div[data-id="code-preview-default"]');
+    const comp = data.getComponentById(selectedButton);
+
+    let flavor = comp.flavors.length > 0 ? currentFlavor : '';
+
+    const placeholder = (sel.length > 0 ? sel : comp.text);
+
+    node.innerHTML = updateComponentCode(comp.code, selectedButton, placeholder, flavor);
 
     if (node) {
         if (show) {
-            previewDefault.classList.toggle('c4l-hidden');
-            node.classList.toggle('c4l-hidden');
+            previewDefault.classList.toggle('elements-hidden');
+            node.classList.toggle('elements-hidden');
         } else {
-            node.classList.toggle('c4l-hidden');
-            previewDefault.classList.toggle('c4l-hidden');
+            node.classList.toggle('elements-hidden');
+            previewDefault.classList.toggle('elements-hidden');
         }
     }
 };
-
-/**
- * Handle a mouse events mouseenter/mouseleave in a variant button.
- *
- * @param {MouseEvent} event The mouseenter/mouseleave event
- * @param {obj} modal
- * @param {bool} show
- */
-const handleVariantMouseEvent = (event, modal, show) => {
-    const variant = event.target.closest('span');
-    const variantEnabled = variant.dataset.state == 'on';
-    const button = event.target.closest('button');
-
-    if (!variantEnabled) {
-        updateVariantComponentState(variant, button, modal, show, false);
-    }
-};
-
 
 /**
  * Handle a mouse event within the variant buttons.
@@ -319,150 +410,18 @@ const handleVariantClick = (event, modal) => {
     event.stopPropagation();
     const variant = event.target.closest('span');
     const button = event.target.closest('button');
+    const comp = data.getComponentById(button.dataset.id);
+    const flavor = comp.flavors.length > 0 ? currentFlavor : '';
+
     updateVariantComponentState(variant, button, modal, false, true);
-};
 
-/**
- * Get the template context for the dialogue.
- *
- * @param {Editor} editor
- * @param {object} data
- * @returns {object} data
- */
-const getTemplateContext = async(editor, data) => {
-    return Object.assign({}, {
-        elementid: editor.id,
-        buttons: await getButtons(editor),
-        filters: await getFilters(),
-        preview: previewC4L,
-    }, data);
-};
-
-/**
- * Get the C4L filters for the dialogue.
- *
- * @returns {object} data
- */
-const getFilters = async() => {
-    const filters = [];
-    const stringValues = await getStrings(Contexts.map((key) => ({key, component})));
-
-    // Iterate over contexts.
-    Contexts.forEach((context, index) => {
-        filters.push({
-            name: stringValues[index],
-            type: context,
-            filterClass: index === 0 ? 'c4l-button-filter-enabled' : '',
-        });
-    });
-
-    return filters;
-};
-
-/**
- * Get the C4L buttons for the dialogue.
- *
- * @param {Editor} editor
- * @returns {object} buttons
- */
-const getButtons = (editor) => {
-    const buttons = [];
-    const sel = editor.selection.getContent();
-    let componentCode = '';
-    let placeholder = '';
-    let variants = [];
-    let buttonText = '';
-
-    // Iterate over components.
-    Components.forEach((component) => {
-        if (!userStudent || (userStudent && allowedComponents.includes(component.name))) {
-            if (previewC4L) {
-                placeholder = (sel.length > 0 ? sel : component.text);
-                componentCode = component.code;
-                componentCode = componentCode.replace('{{PLACEHOLDER}}', placeholder);
-                // Return active variants for component.
-                variants = getVariantsClass(component.name);
-
-                // Apply class variants and html to html component.
-                const variantsNode = document.createElement('span');
-                variantsNode.dataset.id = 'variantHTML-' + component.id;
-                if (variants.length > 0) {
-                    componentCode = componentCode.replace('{{VARIANTS}}', variants.join(' '));
-                    variantsNode.innerHTML = getVariantsHtml(component.name);
-                    componentCode = componentCode.replace('{{VARIANTSHTML}}', variantsNode.outerHTML);
-                } else {
-                    componentCode = componentCode.replace('{{VARIANTS}}', '');
-                    componentCode = componentCode.replace('{{VARIANTSHTML}}', variantsNode.outerHTML);
-                }
-
-                // Apply lang strings.
-                componentCode = applyLangStrings(componentCode);
-            }
-
-            // Save contexts.
-            if (Contexts.indexOf(component.type) === -1) {
-                Contexts.push(component.type);
-            }
-
-            buttonText = component.type == 'custom' ? component.buttonname : langStrings.get(component.name);
-            buttons.push({
-                id: component.name,
-                name: buttonText,
-                type: component.type,
-                icon: component.icon ?? '',
-                imageClass: component.imageClass,
-                classComponent: compPrefix + component.name,
-                htmlcode: componentCode,
-                css: component.css ?? '',
-                variants: getVariantsState(component.name, component.variants),
-            });
-
-            // Add class to hide button.
-            if (Contexts.indexOf(component.type) !== 0) {
-                buttons[buttons.length - 1].imageClass += ' c4l-hidden';
-            }
-        }
-    });
-
-    return buttons;
-};
-
-/**
- * Get variants for the dialogue.
- *
- * @param  {string} component
- * @param  {object} elements
- * @return {object} Variants for a component
- */
-const getVariantsState = (component, elements) => {
-    const variants = [];
-    let variantState = '';
-    let variantClass = '';
-
-    // Max 3 variants.
-    if (elements.length > 3) {
-        elements = elements.slice(0, 2);
-    }
-
-    elements.forEach((variant, index) => {
-        if (variantExists(component, variant)) {
-            variantState = 'on';
-            variantClass = 'on ';
-        } else {
-            variantState = 'off';
-            variantClass = '';
-        }
-        variantClass += variant + '-variant-' + variantState;
-        variants.push({
-            id: index,
-            name: variant,
-            state: variantState,
-            imageClass: variantClass,
-            title: langStrings.get(variant),
-        });
-    });
-
-    return variants;
+    const node = modal.getRoot()[0].querySelector('div[data-id="code-preview-' + button.dataset.id + '"]');
+    node.innerHTML = updateComponentCode(
+        comp.code,
+        button.dataset.id,
+        comp.text,
+        flavor
+    );
 };
 
 /**
@@ -475,33 +434,35 @@ const getVariantsState = (component, elements) => {
  * @param {bool} updateHtml
  */
 const updateVariantComponentState = (variant, button, modal, show, updateHtml) => {
-    const selectedVariant = 'c4l-' + variant.dataset.variant + '-variant';
-    const component = Components.find(element => element.name == button.dataset.id);
+    const selectedVariant = variant.dataset.variantclass;
+    const selectedButton = button.dataset.id;
     const componentClass = button.dataset.classcomponent;
     const previewComponent = modal.getRoot()[0]
         .querySelector('div[data-id="code-preview-' + button.dataset.id + '"] .' + componentClass);
     const variantPreview = modal.getRoot()[0]
         .querySelector('span[data-id="variantHTML-' + button.dataset.id + '"]');
+    const comp = data.getComponentById(selectedButton);
     let variantsHtml = '';
+    let hasflavors = comp.flavors.length > 0;
 
     if (previewComponent) {
         if (updateHtml) {
             if (variant.dataset.state == 'on') {
-                removeVariant(component.name, variant.dataset.variant);
+                removeVariant(comp.name, variant.dataset.variant, hasflavors ? currentFlavor : '');
                 updateVariantButtonState(variant, false);
                 previewComponent.classList.remove(selectedVariant);
             } else {
-                addVariant(component.name, variant.dataset.variant);
+                addVariant(comp.name, variant.dataset.variant, hasflavors ? currentFlavor : '');
                 updateVariantButtonState(variant, true);
                 previewComponent.classList.add(selectedVariant);
             }
 
             // Update variant preview HTML.
             if (variantPreview) {
-                variantPreview.innerHTML = getVariantsHtml(component.name);
+                variantPreview.innerHTML = getVariantsHtml(comp.name);
             }
         } else {
-            variantsHtml = getVariantsHtml(component.name);
+            variantsHtml = getVariantsHtml(comp.name);
             if (show) {
                 previewComponent.classList.add(selectedVariant);
                 variantsHtml += getVariantHtml(variant.dataset.variant);
@@ -515,15 +476,13 @@ const updateVariantComponentState = (variant, button, modal, show, updateHtml) =
             }
         }
     } else {
-        if (updateHtml) {
-            // Update variants preferences.
-            if (variant.dataset.state == 'on') {
-                removeVariant(component.name, variant.dataset.variant);
-                updateVariantButtonState(variant, false);
-            } else {
-                addVariant(component.name, variant.dataset.variant);
-                updateVariantButtonState(variant, true);
-            }
+        // Update variants preferences.
+        if (variant.dataset.state == 'on') {
+            removeVariant(comp.name, variant.dataset.variant, hasflavors ? currentFlavor : '');
+            updateVariantButtonState(variant, false);
+        } else {
+            addVariant(comp.name, variant.dataset.variant, hasflavors ? currentFlavor : '');
+            updateVariantButtonState(variant, true);
         }
     }
 };
@@ -554,12 +513,12 @@ const updateVariantButtonState = (variant, activate) => {
  * @param  {object} modal
  * @param  {String} context
  */
-const showContextButtons = (modal, context) => {
+const showCategoryButtons = (modal, context) => {
     const showNodes = modal.getRoot()[0].querySelectorAll('button[data-type="' + context + '"]');
     const hideNodes = modal.getRoot()[0].querySelectorAll('button[data-type]:not([data-type="' + context + '"])');
 
-    showNodes.forEach(node => node.classList.remove('c4l-hidden'));
-    hideNodes.forEach(node => node.classList.add('c4l-hidden'));
+    showNodes.forEach(node => node.classList.remove('elements-hidden'));
+    hideNodes.forEach(node => node.classList.add('elements-hidden'));
 };
 
 /**
@@ -572,7 +531,7 @@ const applyLangStrings = (text) => {
     const compRegex = /{{#([^}]*)}}/g;
 
     [...text.matchAll(compRegex)].forEach(strLang => {
-        text = text.replace('{{#' + strLang[1] + '}}', langStrings.get(strLang[1]));
+        text = text.replace('{{#' + strLang[1] + '}}', data.getLangString(strLang[1]));
     });
 
     return text;
@@ -600,84 +559,4 @@ const applyRandomID = (text) => {
     }
 
     return text;
-};
-
-/**
- * Get language strings.
- *
- * @return {object} Language strings
- */
-const getAllStrings = async() => {
-    const keys = [];
-    const compRegex = /{{#([^}]*)}}/g;
-
-    Components.forEach(element => {
-
-        // Only add name from standard components.
-        if (element.name.indexOf("customcomp") == -1) {
-            keys.push(element.name);
-        }
-
-        // Get lang strings from variants.
-        element.variants.forEach(variant => {
-            if (keys.indexOf(variant) === -1) {
-                keys.push(variant);
-            }
-        });
-
-        // Get lang strings from components.
-        [...element.code.matchAll(compRegex)].forEach(strLang => {
-            if (keys.indexOf(strLang[1]) === -1) {
-                keys.push(strLang[1]);
-            }
-        });
-
-        // Get lang strings from text placeholders.
-        [...element.text.matchAll(compRegex)].forEach(strLang => {
-            if (keys.indexOf(strLang[1]) === -1) {
-                keys.push(strLang[1]);
-            }
-        });
-    });
-
-    const stringValues = await getStrings(keys.map((key) => ({key, component})));
-    return new Map(keys.map((key, index) => ([key, stringValues[index]])));
-};
-
-/**
- * Add custom components to standard components.
- */
-const addCustomComponents = () => {
-    if (customComponents.length > 0) {
-        customComponents.forEach(customcomp => {
-            if (Components.find(element => element.id == customcomp['id'] + 1000) == undefined) {
-                Components.push({
-                    id: customcomp['id'] + 1000,
-                    name: customcomp['name'],
-                    buttonname: customcomp['buttonname'],
-                    type: 'custom',
-                    imageClass: 'c4l-custom-icon',
-                    code: replaceCustomPlaceholders(customcomp),
-                    text: customcomp['text'].length > 0 ? customcomp['text'] : '{{#textplaceholder}}',
-                    variants: customcomp['variants'] ? ["full-width"] : [],
-                    icon: customcomp['icon'],
-                    css: customcomp['css']
-                });
-            }
-        });
-    }
-};
-
-/**
- * Replace custom placeholders with values.
- *
- * @param  {object} component
- * @return {string} HTML code.
- */
-const replaceCustomPlaceholders = (component) => {
-    let html = component['code'];
-    const variants = component['variants'] ? " {{VARIANTS}}" : "";
-    html = html.replace('{{CUSTOMCLASS}}', compPrefix + component['name'] + ' ' + compPrefix + "custom-component" + variants);
-
-    return html;
 };

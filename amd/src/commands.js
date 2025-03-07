@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tiny C4L commands.
+ * Tiny Elements commands.
  *
- * @module      tiny_c4l/commands
+ * @module      tiny_elements/commands
  * @copyright   2022 Marc Català <reskit@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,48 +26,42 @@ import {get_string as getString} from 'core/str';
 import {handleAction} from './ui';
 import {
     component,
-    c4lButtonName,
-    c4lMenuItemName,
+    elementsButtonName,
+    elementsMenuItemName,
     icon,
 } from './common';
-import {
-        isC4LVisible,
-        getpreviewCSS
-} from './options';
+import {isElementsVisible} from './options';
 
 export const getSetup = async() => {
     const [
-        c4lButtonNameTitle,
-        c4lMenuItemNameTitle,
+        elementsButtonNameTitle,
+        elementsMenuItemNameTitle,
         buttonImage,
     ] = await Promise.all([
-        getString('button_c4l', component),
-        getString('menuitem_c4l', component),
+        getString('button_elements', component),
+        getString('menuitem_elements', component),
         getButtonImage('icon', component),
     ]);
 
     return (editor) => {
-        if (isC4LVisible(editor)) {
-            // Register the C4L Icon.
+        if (isElementsVisible(editor)) {
+            // Register the Elements Icon.
             editor.ui.registry.addIcon(icon, buttonImage.html);
 
-            // Register the C4L Toolbar Button.
-            editor.ui.registry.addButton(c4lButtonName, {
+            // Register the Elements Toolbar Button.
+            editor.ui.registry.addButton(elementsButtonName, {
                 icon,
-                tooltip: c4lButtonNameTitle,
+                tooltip: elementsButtonNameTitle,
                 onAction: () => handleAction(editor),
             });
 
-            // Add the C4L Menu Item.
+            // Add the Elements Menu Item.
             // This allows it to be added to a standard menu, or a context menu.
-            editor.ui.registry.addMenuItem(c4lMenuItemName, {
+            editor.ui.registry.addMenuItem(elementsMenuItemName, {
                 icon,
-                text: c4lMenuItemNameTitle,
+                text: elementsMenuItemNameTitle,
                 onAction: () => handleAction(editor),
             });
-
-            // Inject custom CSS.
-            editor.options.set('content_style', getpreviewCSS(editor));
         }
     };
 };

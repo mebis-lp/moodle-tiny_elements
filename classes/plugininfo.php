@@ -14,26 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tiny_c4l;
+namespace tiny_elements;
 
 use context;
 use editor_tiny\plugin;
 use editor_tiny\plugin_with_buttons;
 use editor_tiny\plugin_with_configuration;
 use editor_tiny\plugin_with_menuitems;
+use tiny_elements\local\utils;
+use tiny_elements\local\constants;
 
 /**
- * Tiny c4l plugin for Moodle.
+ * Tiny elements plugin for Moodle.
  *
- * @package    tiny_c4l
+ * @package    tiny_elements
  * @copyright  2022 Marc Català <reskit@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class plugininfo extends plugin implements
-    plugin_with_buttons,
-    plugin_with_menuitems,
-    plugin_with_configuration {
-
+class plugininfo extends plugin implements plugin_with_buttons, plugin_with_configuration, plugin_with_menuitems {
     /**
      * Get the editor buttons for this plugins
      *
@@ -41,7 +39,7 @@ class plugininfo extends plugin implements
      */
     public static function get_available_buttons(): array {
         return [
-            'tiny_c4l/c4l',
+            'tiny_elements/elements',
         ];
     }
     /**
@@ -51,7 +49,7 @@ class plugininfo extends plugin implements
      */
     public static function get_available_menuitems(): array {
         return [
-            'tiny_c4l/c4l',
+            'tiny_elements/elements',
         ];
     }
 
@@ -63,7 +61,6 @@ class plugininfo extends plugin implements
      * @param array $options
      * @param array $fpoptions
      * @param \editor_tiny\editor|null $editor
-     * @return void
      *
      * @return array
      */
@@ -74,125 +71,53 @@ class plugininfo extends plugin implements
         ?\editor_tiny\editor $editor = null
     ): array {
 
-        $config = get_config('tiny_c4l');
-        $viewc4l = has_capability('tiny/c4l:viewplugin', $context);
-        $showpreview = get_config('tiny_c4l', 'enablepreview');
+        $config = get_config('tiny_elements');
+        $viewelements = has_capability('tiny/elements:viewplugin', $context);
+        $showpreview = get_config('tiny_elements', 'enablepreview');
         $isstudent = !has_capability('gradereport/grader:view', $context);
-        $allowedcomps = [];
-        if ($isstudent) {
-            $aimedcomps = explode(',', get_config('tiny_c4l', 'aimedatstudents'));
-            $notintendedcomps = explode(',', get_config('tiny_c4l', 'notintendedforstudents'));
-            $allowedcomps = array_merge($aimedcomps, $notintendedcomps);
+        $canmanage = has_capability('tiny/elements:manage', $context);
+        $markcomponents = !empty(get_config('tiny_elements', 'markinserted'));
+
+        $cache = \cache::make('tiny_elements', constants::CACHE_AREA);
+        $rev = $cache->get(constants::CSS_CACHE_REV);
+        if (!$rev) {
+            $rev = utils::rebuild_css_cache();
         }
-
-        // Get CSS preview.
-        $previewcss = $config->custompreviewcss ?? '';
-
-        // Get custom components.
-        $customcomponents = self::get_custom_components($config);
+        $cssurl = \moodle_url::make_pluginfile_url(
+            SYSCONTEXTID,
+            'tiny_elements',
+            '',
+            null,
+            '',
+            'tiny_elements_styles.css?rev=' . $rev
+        )->out();
 
         return [
             'isstudent' => $isstudent,
-            'allowedcomps' => $allowedcomps,
             'showpreview' => ($showpreview == '1'),
-            'viewc4l' => $viewc4l,
-            'previewcss' => $previewcss,
-            'customcomps' => $customcomponents,
+            'viewelements' => $viewelements,
+            'cssurl' => $cssurl,
+            'canmanage' => $canmanage,
+            'markcomponents' => $markcomponents,
         ];
     }
 
     /**
-     * Get the custom components.
+     * Check if the plugin is enabled for the context
      *
-     * @param  stdClass $config tiny_c4l config
-     * @return array
+     * @param context $context
+     * @param array $options
+     * @param array $fpoptions
+     * @param \editor_tiny\editor|null $editor
+     *
+     * @return bool
      */
-    public static function get_custom_components(\stdClass $config) {
-        global $OUTPUT;
-
-        $customcomponents = [];
-        if ($config->customcompcount > 0) {
-            $context = \context_system::instance();
-            $customfiles = [];
-            if ($config->customimagesbank) {
-                // Get filearea.
-                $fs = get_file_storage();
-
-                // Get all files from filearea.
-                $files = $fs->get_area_files($context->id, 'tiny_c4l', 'customimagesbank',
-                        false, 'itemid', false);
-                foreach ($files as $file) {
-                    $customfiles[$file->get_filename()] = $file;
-                }
-            }
-            for ($i = 1; $i <= $config->customcompcount; $i++) {
-                $compcode   = "customcompcode{$i}";
-                $compenable = "customcompenable{$i}";
-                $compname   = "customcompname{$i}";
-                if ($config->$compenable === '1'
-                    && !empty(trim($config->$compname))
-                    && !empty(trim($config->$compcode))) {
-
-                    // Component parameters.
-                    $compicon  = "customcompicon{$i}";
-                    $comptext  = "customcomptext{$i}";
-                    $compvar   = "customcompvariant{$i}";
-                    $compsort  = "customcompsortorder{$i}";
-
-                    if (!empty($config->$compicon)) {
-                        $icon = \moodle_url::make_pluginfile_url($context->id, 'tiny_c4l',
-                            "customcompicon{$i}", 0, '/', basename($config->$compicon));
-                    } else {
-                        $icon = $OUTPUT->image_url('c4l_customcomponent_icon', 'tiny_c4l');
-                    }
-
-                    // Replace {} before searching for images and cleaning code (FORMAT_HTML).
-                    $html = str_replace('{{CUSTOMCLASS}}', '~~CUSTOMCLASS~~', $config->$compcode);
-                    $html = str_replace('{{PLACEHOLDER}}', '~~PLACEHOLDER~~', $html);
-
-                    // Set url images.
-                    $html = preg_replace_callback('/{{([^}]*)}}/',
-                        function ($matches) use ($customfiles) {
-                            if (isset($matches[1]) && isset($customfiles[$matches[1]])) {
-                                $file = $customfiles[$matches[1]];
-                                $fileurl = \moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(),
-                                    $file->get_filearea(), $file->get_itemid(), $file->get_filepath(),
-                                    $file->get_filename(), false)->out();
-
-                                return $fileurl;
-                            } else {
-                                return '';
-                            }
-                        },
-                        $html
-                    );
-
-                    // Clean HTML code.
-                    $html = format_text($html, FORMAT_HTML);
-                    $html = preg_replace('/ style=("|\')(.*?)("|\')/', '', $html);
-
-                    // Restore {}.
-                    $html = str_replace('~~CUSTOMCLASS~~', '{{CUSTOMCLASS}}', $html);
-                    $html = str_replace('~~PLACEHOLDER~~', '{{PLACEHOLDER}}', $html);
-
-                    $key = count($customcomponents);
-                    $customcomponents[$key]['id'] = $i;
-                    $customcomponents[$key]['name'] = 'customcomp' . $i;
-                    $customcomponents[$key]['buttonname'] = $config->$compname;
-                    $customcomponents[$key]['icon'] = $icon->out();
-                    $customcomponents[$key]['code'] = $html;
-                    $customcomponents[$key]['text'] = $config->$comptext ?? '';
-                    $customcomponents[$key]['variants'] = $config->$compvar === '1';
-                    $customcomponents[$key]['sortorder'] = $config->$compsort;
-                }
-            }
-
-            // Sort components.
-            usort($customcomponents, function($a, $b) {
-                return $a['sortorder'] <=> $b['sortorder'];
-            });
-        }
-
-        return $customcomponents;
+    public static function is_enabled(
+        context $context,
+        array $options,
+        array $fpoptions,
+        ?\editor_tiny\editor $editor = null
+    ): bool {
+        return has_capability('tiny/elements:viewplugin', $context);
     }
 }

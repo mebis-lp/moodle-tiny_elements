@@ -15,17 +15,18 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Tiny C4L plugin version details.
+ * Tiny Elements plugin version details.
  *
- * @package     tiny_c4l
- * @copyright   2022 Marc Català <reskit@gmail.com>
+ * @package     tiny_elements
+ * @copyright   2025 ISB Bayern
+ * @author      Stefan Hanauska <stefan.hanauska@csg-in.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tiny_c4l';
-$plugin->release = '3.0.1';
-$plugin->requires = 2022112800;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->version = 2024042901;
+$plugin->component = 'tiny_elements';
+$plugin->release = '1.0.0';
+$plugin->requires = 2024042200;
+$plugin->maturity = MATURITY_BETA;
+$plugin->version = 2025030601;

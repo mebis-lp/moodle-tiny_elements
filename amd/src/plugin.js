@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tiny C4L plugin.
+ * Tiny Elements plugin.
  *
- * @module      tiny_c4l/plugin
+ * @module      tiny_elements/plugin
  * @copyright   2022 Marc Català <reskit@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,6 +29,7 @@ import {register as registerOptions} from './options';
 import {getSetup as getCommandSetup} from './commands';
 import * as Configuration from './configuration';
 
+// Setup the tiny_elements Plugin.
 // eslint-disable-next-line no-async-promise-executor
 export default new Promise(async(resolve) => {
     const [
@@ -51,6 +52,6 @@ export default new Promise(async(resolve) => {
         return pluginMetadata;
     });
 
-    // Resolve the C4L Plugin and include configuration.
+    // Resolve the Elements Plugin and include configuration.
     resolve([pluginName, Configuration]);
 });

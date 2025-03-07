@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help me improve c4l
+about: Create a report to help me improve elements
 title: ''
 labels: ''
 assignees: ''

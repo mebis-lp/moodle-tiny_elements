@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template tiny_c4l/modal
+    @template tiny_elements/modal
 
     Modal to manage components within the Tiny Editor.
 
@@ -29,65 +29,135 @@
 
     Example context (json):
     {
-        "elementid": "exampleId",
-        "filters" : [
-            {"name": "Contextual"},
-            {"type": "contextual"},
-            {"filterClass": ""}
+    "buttons": [
+        {
+        "id": 1,
+        "name": "tip",
+        "type": 4,
+        "imageClass": "elements-teachpals-tip-icon",
+        "htmlcode": "<div></div>",
+        "variants": [
+            {
+            "id": 8,
+            "displayname": "Avatar 2",
+            "name": "avatar2",
+            "state": "off",
+            "imageClass": "avatar2-variant-off",
+            "variantclass": "elements-avatar2-variant",
+            "content": ""
+            }
         ],
-        "buttons": [
-          {"id": "randomid"},
-          {"imageClass": "c4l-classname"},
-          {"name": "component name"},
-          {"htmlcode": "<div>Text</div>"}
+        "flavorlist": "robi-bot,horst-cloud",
+        "category": 4
+        },
+        {
+        "id": 2,
+        "name": "scenario",
+        "type": 4,
+        "imageClass": "elements-teachpals-scenario-icon",
+        "htmlcode": "<div></div>",
+        "variants": [
+            {
+            "id": 8,
+            "displayname": "Avatar 2",
+            "name": "avatar2",
+            "state": "off",
+            "imageClass": "avatar2-variant-off",
+            "variantclass": "elements-avatar2-variant",
+            "content": ""
+            }
         ],
-        "preview": "true"
+        "flavorlist": "robi-bot,horst-cloud",
+        "category": 4
+        }
+    ],
+    "categories": [
+        {
+        "categoryid": 4,
+        "name": "Teach Pals",
+        "type": 4,
+        "displayorder": 1,
+        "flavors": [
+            {
+            "id": 1,
+            "name": "horst-cloud",
+            "displayname": "Horst und Woelkchen",
+            "factive": "active"
+            },
+            {
+            "id": 12,
+            "name": "robi-bot",
+            "displayname": "Robi und Bot"
+            }
+        ],
+        "hasFlavors": 2,
+        "active": "active"
+        }
+    ],
+    "preview": true,
+    "elementid": "elements-plugin-container",
+    "canmanage": true
     }
+
 }}
 {{< core/modal }}
-    {{$title}}
-        {{#str}} pluginname, tiny_c4l {{/str}}
-    {{/title}}
+    {{$header}}
+        <h5 id="{{uniqid}}-modal-title" class="modal-title" data-region="title">{{#str}} pluginname, tiny_elements {{/str}}</h5>
+        {{#canmanage}}
+        <a href="{{global.config.wwwroot}}/lib/editor/tiny/plugins/elements/management.php" class="btn btn-sm" target="_blank">
+            {{#pix}} i/settings, core, {{#str}} manage, tiny_elements {{/str}}{{/pix}}
+        </a>
+        {{/canmanage}}
+    {{/header}}
     {{$body}}
-        <div id="{{elementid}}" class="c4l-plugin-container">
-            <div class="c4l-select-filters">
-                <select class="c4l-select-filter" aria-controls="c4l-buttons-grid">
-                    {{#filters}}
-                        <option value="{{type}}">{{name}}</option>
-                    {{/filters}}
-                </select>
-            </div>
-            <div class="c4l-buttons-filters">
-                {{#filters}}
-                    <button class="c4l-button-filter {{filterClass}}" data-filter="{{type}}" aria-controls="c4l-buttons-grid">
-                            {{name}}
-                    </button>
-                {{/filters}}
-            </div>
-            <div class="c4l-buttons-preview {{^preview}}c4l-no-preview{{/preview}}">
-                <div id="c4l-buttons-grid" class="c4l-buttons-grid">
+        <div id="{{elementid}}" class="elements-plugin-container">
+            <ul class="nav nav-tabs">
+                {{#categories}}
+                    {{#hasFlavors}}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {{active}}" data-bs-toggle="dropdown" data-toggle="dropdown" data-categoryid="{{categoryid}}" data-categoryname="{{categoryname}}" href="#" role="button" aria-expanded="false">{{name}}</a>
+                        <div class="dropdown-menu">
+                            {{#flavors}}
+                                <a class="dropdown-item elements-category-flavor {{flavorClass}} {{factive}}" data-id="{{id}}" data-categoryname="{{categoryname}}" data-categoryid="{{categoryid}}" data-flavor="{{name}}" aria-controls="elements-buttons-grid"  href="#">{{displayname}}</a>
+                            {{/flavors}}
+                        </div>
+                    </li>
+                    {{/hasFlavors}}
+                    {{^hasFlavors}}
+                    <li class="nav-item">
+                        <a class="nav-link {{active}} elements-category no-flavors" href="#" data-id="{{id}}" data-categoryname="{{categoryname}}" data-categoryid="{{categoryid}}" data-filter="{{type}}" aria-controls="elements-buttons-grid">{{name}}</a>
+                    </li>
+                    {{/hasFlavors}}
+                {{/categories}}
+            </ul>
+            <div class="elements-buttons-preview {{^preview}}elements-no-preview{{/preview}}">
+                <div id="elements-buttons-grid" class="elements-buttons-grid">
                     {{#buttons}}
                         <button
-                            class="c4lt-dialog-button {{imageClass}}"
+                            class="elementst-dialog-button {{imageClass}}"
                             data-id="{{id}}"
                             data-type="{{type}}"
-                            data-classcomponent="{{classComponent}}"
+                            data-classcomponent="{{imageClass}}"
+                            data-flavorlist = "{{flavorlist}}"
+                            data-category="{{category}}"
                         >
-                            <span class="c4l-button-text">
+                            <span class="elements-button-text">
                                 {{#icon}}
                                     <i class="icon" style="background-image: url({{icon}});"></i>
                                 {{/icon}}
                                 {{{name}}}
                             </span>
-                            <span class="c4l-button-variants">
+                            <span class="elements-button-variants">
                             {{#variants}}
                                 <span
-                                    class="c4l-button-variant {{imageClass}}"
+                                    class="elements-button-variant {{imageClass}} {{state}}"
+                                    data-id="{{id}}"
                                     data-variant="{{name}}"
+                                    data-variantclass="{{variantclass}}"
                                     data-state="{{state}}"
                                     data-toggle="tooltip"
                                     data-placement="top"
-                                    title="{{title}}"
+                                    title="{{displayname}}"
                                 ></span>
                             {{/variants}}
                             </span>
@@ -95,13 +165,13 @@
                     {{/buttons}}
                 </div>
                 {{#preview}}
-                    <div class="c4l-code-preview">
-                        <div class="c4l-text-preview">{{#str}} preview, tiny_c4l {{/str}}</div>
+                    <div class="elements-code-preview">
+                        <div class="elements-text-preview">{{#str}} preview, tiny_elements {{/str}}</div>
                         <div data-id="code-preview-default">
-                            <div class="c4l-preview-default">{{#str}} previewdefault, tiny_c4l {{/str}}</div>
+                            <div class="elements-preview-default">{{#str}} previewdefault, tiny_elements {{/str}}</div>
                         </div>
                         {{#buttons}}
-                            <div data-id="code-preview-{{id}}" class="c4l-component-code {{#css}}c4l-component-custom-code{{/css}} c4l-hidden" role="presentation" style="{{css}}">{{{htmlcode}}}</div>
+                            <div data-id="code-preview-{{id}}" class="elements-component-code {{#css}}elements-component-custom-code{{/css}} elements-hidden" role="presentation" style="{{css}}">{{{htmlcode}}}</div>
                         {{/buttons}}
                     </div>
                 {{/preview}}

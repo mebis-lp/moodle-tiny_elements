@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Options helper for C4L plugin.
+ * Options helper for Elements plugin.
  *
- * @module      tiny_c4l/options
+ * @module      tiny_elements/options
  * @copyright   2022 Marc Català <reskit@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,19 +25,14 @@ import {getPluginOptionName} from 'editor_tiny/options';
 import {pluginName} from './common';
 
 const isstudentName = getPluginOptionName(pluginName, 'isstudent');
-const allowedcompsName = getPluginOptionName(pluginName, 'allowedcomps');
 const showpreviewName = getPluginOptionName(pluginName, 'showpreview');
-const viewc4lName = getPluginOptionName(pluginName, 'viewc4l');
-const previewCSS = getPluginOptionName(pluginName, 'previewcss');
-const customComps = getPluginOptionName(pluginName, 'customcomps');
+const viewElementsName = getPluginOptionName(pluginName, 'viewelements');
+const cssUrlName = getPluginOptionName(pluginName, 'cssurl');
+const canManageName = getPluginOptionName(pluginName, 'canmanage');
+const markComponentsName = getPluginOptionName(pluginName, 'markcomponents');
 
 export const register = (editor) => {
     const registerOption = editor.options.register;
-
-    registerOption(allowedcompsName, {
-        processor: 'array',
-        "default": [],
-    });
 
     registerOption(isstudentName, {
         processor: 'boolean',
@@ -49,32 +44,37 @@ export const register = (editor) => {
         "default":  true,
     });
 
-    registerOption(viewc4lName, {
+    registerOption(viewElementsName, {
         processor: 'boolean',
         "default":  true,
     });
 
-    registerOption(previewCSS, {
+    registerOption(cssUrlName, {
         processor: 'string',
-        "default": '',
+        "default":  '',
     });
 
-    registerOption(customComps, {
-        processor: 'array',
-        "default": [],
+    registerOption(canManageName, {
+        processor: 'boolean',
+        "default":  false,
+    });
+
+    registerOption(markComponentsName, {
+        processor: 'boolean',
+        "default":  false,
     });
 };
 
 /**
- * Get the permissions configuration for the Tiny C4L plugin.
+ * Get the permissions configuration for the Tiny Elements plugin.
  *
  * @param {TinyMCE} editor
  * @returns {object}
  */
-export const isC4LVisible = (editor) => editor.options.get(viewc4lName);
+export const isElementsVisible = (editor) => editor.options.get(viewElementsName);
 
 /**
- * Get whether user is a student configuration for the Tiny C4L plugin.
+ * Get whether user is a student configuration for the Tiny Elements plugin.
  *
  * @param {TinyMCE} editor
  * @returns {object}
@@ -82,7 +82,7 @@ export const isC4LVisible = (editor) => editor.options.get(viewc4lName);
 export const isStudent = (editor) => editor.options.get(isstudentName);
 
 /**
- * Get the preview visibility configuration for the Tiny C4L plugin.
+ * Get the preview visibility configuration for the Tiny Elements plugin.
  *
  * @param {TinyMCE} editor
  * @returns {object}
@@ -90,25 +90,22 @@ export const isStudent = (editor) => editor.options.get(isstudentName);
 export const showPreview = (editor) => editor.options.get(showpreviewName);
 
 /**
- * Get components allowed at students configuration for the Tiny C4L plugin.
- *
- * @param {TinyMCE} editor
- * @returns {object}
- */
-export const getallowedComponents = (editor) => editor.options.get(allowedcompsName);
-
-/**
- * Get custom components configuration for the Tiny C4L plugin.
- *
- * @param {TinyMCE} editor
- * @returns {object}
- */
-export const getcustomComponents = (editor) => editor.options.get(customComps);
-
-/**
- * Get custom preview CSS configuration for the Tiny C4L plugin.
- *
+ * Get the css url for the Tiny Elements plugin (to be used in the editor).
  * @param {TinyMCE} editor
  * @returns {string}
  */
-export const getpreviewCSS = (editor) => editor.options.get(previewCSS);
+export const getCssUrl = (editor) => editor.options.get(cssUrlName);
+
+/**
+ * Whether the use hat tiny_elements/manage capability.
+ * @param {TinyMCE} editor
+ * @returns boolean
+ */
+export const canManage = (editor) => editor.options.get(canManageName);
+
+/**
+ * Whether to inject HTML comments to mark components.
+ * @param {TinyMCE} editor
+ * @returns boolean
+ */
+export const markComponents = (editor) => editor.options.get(markComponentsName);
