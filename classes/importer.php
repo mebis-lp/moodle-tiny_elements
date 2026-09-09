@@ -70,7 +70,7 @@ class importer {
             $fp->extract_to_storage($zip, $this->contextid, 'tiny_elements', 'import', $draftitemid, '/');
             $xmlfile = $fs->get_file($this->contextid, 'tiny_elements', 'import', $draftitemid, '/', constants::FILE_NAME_EXPORT);
             if (!$xmlfile) {
-                $xmlfile = $fs->get_file($this->contextid, 'tiny_elements', 'import', $draftitemid, '/', 'tiny_c4l_export.xml');
+                throw new moodle_exception(get_string('error_import_missing_xml', 'tiny_elements'));
             }
             if (!$xmlfile) {
                 throw new moodle_exception(get_string('error_import_missing_xml', 'tiny_elements'));
@@ -196,15 +196,12 @@ class importer {
         $componentmap = [];
 
         foreach (constants::TABLES as $table) {
-            $aliasname = constants::TABLE_ALIASES[$table];
-            if (!isset($xml->$table) && !isset($xml->$aliasname) && !in_array($table, constants::OPTIONAL_TABLES)) {
+            if (!isset($xml->$table) && !in_array($table, constants::OPTIONAL_TABLES)) {
                 throw new moodle_exception(get_string('error_import_missing_table', 'tiny_elements', $table));
             }
         }
 
         $data = [];
-
-        $aliases = array_flip(constants::TABLE_ALIASES);
 
         // Make data usable for further processing.
         foreach ($xml as $table => $rows) {
@@ -215,8 +212,6 @@ class importer {
                 }
                 if (in_array($table, constants::TABLES)) {
                     $data[$table][] = $obj;
-                } else {
-                    $data[$aliases[$table]][] = $obj;
                 }
             }
         }
@@ -247,34 +242,11 @@ class importer {
             self::import_component_variant($componentvariant, $componentmap);
         }
 
-        self::update_flavor_variant_category();
-
         if (!$this->dryrun) {
             local\utils::purge_and_rebuild_caches();
         }
 
         return $categorymap;
-    }
-
-    /**
-     * Updates all flavors and variants that do not have a categoryname yet.
-     */
-    public function update_flavor_variant_category(): void {
-        global $DB;
-
-        $manager = new manager();
-
-        $flavors = $DB->get_records('tiny_elements_flavor', ['categoryname' => '']);
-        foreach ($flavors as $flavor) {
-            $categoryname = $manager->get_compcatname_for_flavor($flavor->name);
-            $DB->set_field('tiny_elements_flavor', 'categoryname', $categoryname, ['id' => $flavor->id]);
-        }
-
-        $variants = $DB->get_records('tiny_elements_variant', ['categoryname' => '']);
-        foreach ($variants as $variant) {
-            $categoryname = $manager->get_compcatname_for_variant($variant->name);
-            $DB->set_field('tiny_elements_variant', 'categoryname', $categoryname, ['id' => $variant->id]);
-        }
     }
 
     /**

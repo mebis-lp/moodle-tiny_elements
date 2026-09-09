@@ -34,15 +34,6 @@ class constants {
         'flavor' => 'tiny_elements_flavor',
         'variant' => 'tiny_elements_variant',
     ];
-    /** @var array Table name aliases for compatibility with tiny_c4l exports. */
-    public const TABLE_ALIASES = [
-        'tiny_elements_compcat' => 'tiny_c4l_compcat',
-        'tiny_elements_component' => 'tiny_c4l_component',
-        'tiny_elements_flavor' => 'tiny_c4l_flavor',
-        'tiny_elements_variant' => 'tiny_c4l_variant',
-        'tiny_elements_comp_flavor' => 'tiny_c4l_comp_flavor',
-        'tiny_elements_comp_variant' => 'tiny_c4l_comp_variant',
-    ];
     /** @var array All tables that are optional. */
     public const OPTIONAL_TABLES = ['tiny_elements_comp_flavor', 'tiny_elements_comp_variant'];
 
