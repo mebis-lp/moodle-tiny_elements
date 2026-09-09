@@ -165,7 +165,8 @@ const displayDialogue = async(editor) => {
     if (soleCategories.length > 0 || selectCategories.length > 0) {
         const savedCategory = currentCategoryId;
         const savedFlavor = lastFlavor[currentCategoryId];
-        if (soleCategories.length == 0 || soleCategories[0].displayorder > selectCategories[0].displayorder) {
+        if ((selectCategories.length > 0)
+            && (soleCategories.length == 0 || soleCategories[0].displayorder > selectCategories[0].displayorder)) {
             selectCategories[0].click();
         } else {
             soleCategories[0].click();
@@ -236,6 +237,11 @@ const handleCategoryFlavorClick = (event, modal) => {
 
     const componentButtons = modal.getRoot()[0].querySelectorAll('.elements-buttons-preview button');
     componentButtons.forEach(componentButton => {
+        // Remove previous flavor.
+        if (componentButton.dataset.flavor != undefined) {
+            componentButton.classList.remove(componentButton.dataset.flavor);
+        }
+        componentButton.classList.add(currentFlavor);
         componentButton.dataset.flavor = currentFlavor;
         if (
             (componentButton.dataset.flavorlist == '' || componentButton.dataset.flavorlist.split(',').includes(currentFlavor)) &&
