@@ -62,6 +62,12 @@ class importer {
      * @return void
      */
     public function import(\stored_file|string $zip, int $draftitemid = 0): void {
+        // Skip the (large) base element library import during unit tests. It would populate the
+        // files table in the system context and pollute the test baseline (e.g. break core_files
+        // ReportBuilder tests) (MBS-10707).
+        if (defined('PHPUNIT_TEST') && PHPUNIT_TEST) {
+            return;
+        }
         global $DB;
 
         if ($zip instanceof \stored_file || file_exists($zip)) {
