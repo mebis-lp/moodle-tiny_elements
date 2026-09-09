@@ -564,4 +564,19 @@ class utils {
         )
         );
     }
+
+    /**
+     * For a list of db records, use the objects and pass the displayname property value through the filter(s).
+     *
+     * @param array $records
+     * @return array the $records with the filters applied at displayname
+     */
+    public static function filter_string_records(array $records): array {
+        foreach ($records as &$record) {
+            if (isset($record->displayname)) {
+                $record->displayname = self::filter_string($record->displayname);
+            }
+        }
+        return $records;
+    }
 }

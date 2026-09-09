@@ -50,10 +50,10 @@ $dbvariant = $DB->get_records('tiny_elements_variant');
 $dbcompvariant = $DB->get_records('tiny_elements_comp_variant');
 
 // Use array_values so mustache can parse it.
-$compcats = array_values($dbcompcats);
-$flavor = array_values($dbflavor);
-$component = array_values($dbcomponent);
-$variant = array_values($dbvariant);
+$compcats = array_values(utils::filter_string_records($dbcompcats));
+$flavor = array_values(utils::filter_string_records($dbflavor));
+$component = array_values(utils::filter_string_records($dbcomponent));
+$variant = array_values(utils::filter_string_records($dbvariant));
 
 // Build component preview images for management.
 foreach ($component as $key => $value) {
