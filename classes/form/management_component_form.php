@@ -70,21 +70,21 @@ class management_component_form extends base_form {
 
         $mform->addElement(
             'autocomplete',
-            'variants',
-            get_string('variants', 'tiny_elements'),
-            $variants,
-            ['multiple' => true, 'ajax' => 'tiny_elements/category_form_helper']
-        );
-        $mform->setType('variants', PARAM_TEXT);
-
-        $mform->addElement(
-            'autocomplete',
             'flavors',
             get_string('flavors', 'tiny_elements'),
             $flavors,
             ['multiple' => true, 'ajax' => 'tiny_elements/category_form_helper']
         );
         $mform->setType('flavors', PARAM_TEXT);
+
+        $mform->addElement(
+            'autocomplete',
+            'variants',
+            get_string('variants', 'tiny_elements'),
+            $variants,
+            ['multiple' => true, 'ajax' => 'tiny_elements/category_form_helper']
+        );
+        $mform->setType('variants', PARAM_TEXT);
 
         $mform->addElement('text', 'displayorder', get_string('displayorder', 'tiny_elements'));
         $mform->setType('displayorder', PARAM_INT);
